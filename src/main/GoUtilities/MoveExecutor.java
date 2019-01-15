@@ -1,9 +1,10 @@
 package GoUtilities;
 
 import GoUtilities.Exceptions.InvalidMoveException;
+import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MoveExecutor {
     private Board board;
@@ -50,21 +51,58 @@ public class MoveExecutor {
     }
 
     private String removeCaptures(String boardState, TileColour colour) {
-        // TODO: this
-        List<Integer> tilesOfColour = extractTilesOfColour(boardState, colour);
-        tilesOfColour.removeIf(this::isNotCaptured);
+        // TODO: take a long hard look at this
+        Set<Integer> tilesOfColourUnchecked = extractTilesOfColour(boardState, colour);
+        Set<Integer> tilesToBeRemoved = new HashSet<>();
 
-        StringBuilder nextBoardStateBuilder = new StringBuilder(boardState);
+        while(tilesOfColourUnchecked.size() > 0) {
+            Pair<Boolean, Set<Integer> > consideredTiles = checkGroupFromTile(boardState, colour,(int) tilesOfColourUnchecked.toArray()[0], null);
 
-        tilesOfColour.forEach(index -> {
-            nextBoardStateBuilder.setCharAt(index, (char) (TileColour.EMPTY.asNumber() + '0'));
-        });
+            if(!consideredTiles.getKey()) {
+                tilesToBeRemoved.addAll(consideredTiles.getValue());
+            }
 
-        return nextBoardStateBuilder.toString();
+            tilesOfColourUnchecked.removeAll(consideredTiles.getValue());
+        }
+
+        System.out.println(tilesToBeRemoved);
+
+        // remove tilesToBeRemoved..
+        return null;
     }
 
-    private List<Integer> extractTilesOfColour(String boardState, TileColour colour) {
-        List<Integer> tilesOfColour = new ArrayList<>();
+    private Pair<Boolean, Set<Integer>> checkGroupFromTile(String boardState, TileColour colour, int index, Set<Integer> group) {
+        Set<Integer> captureGroup = group != null ? group : new HashSet<>();
+        Set<Integer> neighbours = getNeighbourIndices(index);
+        boolean groupFree = false;
+
+
+        for (int neighbourIndex: neighbours){
+            // already considered
+            if(captureGroup.contains(neighbourIndex)) {
+                continue;
+            }
+            // neighbour is empty
+            if(boardState.charAt(neighbourIndex) + '0' == TileColour.EMPTY.asNumber()) {
+                groupFree = true;
+                continue;
+            }
+            // neighbour is of same colour
+            if(boardState.charAt(neighbourIndex) + '0' == colour.asNumber()) {
+                captureGroup.add(neighbourIndex);
+                Pair<Boolean, Set<Integer>> neighbourResult = checkGroupFromTile(boardState, colour, neighbourIndex, captureGroup);
+
+                captureGroup.addAll(neighbourResult.getValue());
+                groupFree = groupFree || neighbourResult.getKey();
+            }
+            // neighbour is of other colour, do nothing
+        }
+
+        return new Pair<>(groupFree, captureGroup);
+    }
+
+    private Set<Integer> extractTilesOfColour(String boardState, TileColour colour) {
+        Set<Integer> tilesOfColour = new HashSet<>();
 
         for (int i = 0; i < boardState.length(); i++) {
             if(boardState.charAt(i) + '0' == colour.asNumber()) {
@@ -75,7 +113,7 @@ public class MoveExecutor {
         return tilesOfColour;
     }
 
-    private boolean isNotCaptured(int index) {
-        return false;
+    private Set<Integer> getNeighbourIndices(int index) {
+        return new HashSet<>();
     }
 }
