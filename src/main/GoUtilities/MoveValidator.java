@@ -3,32 +3,31 @@ package GoUtilities;
 import GoUtilities.Exceptions.*;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-public class MoveVerifyer {
+public class MoveValidator {
     private Board board;
+    private MoveExecutor executor;
 
-    public MoveVerifyer (Board board) {
+    public MoveValidator(Board board, MoveExecutor executor) {
         this.board = board;
+        this.executor = executor;
     }
 
-    public String verifyAndApply (int index, TileColour colour) throws InvalidMoveException {
+    public void verify (int index, TileColour colour) throws InvalidMoveException {
         enforceColour(colour);
         enforceBounds(index);
         enforceEmpty(index);
         enforceKo(index, colour);
-
-        return nextState(index, colour);
     }
 
     private void enforceBounds (int index) throws OutOfBoundsException {
-        if (index < 0 || index > board.size()) {
+        if (index < 0 || index > board.size() * board.size()) {
             throw new OutOfBoundsException();
         }
     }
 
     private void enforceColour (TileColour colour) throws BeforeTurnException {
-        if (colour != this.board.currentPlayer() ) {
+        if (!this.board.turnKeeper().hasTurn(colour)) {
             throw new BeforeTurnException();
         }
     }
@@ -39,21 +38,13 @@ public class MoveVerifyer {
     }
 
     private void enforceKo (int index, TileColour colour) throws KoException {
-        String optimisticNextState = this.nextState(index, colour);
+        String optimisticNextState = executor.applyOptimistic(index, colour);
         List<String> history = this.board.history();
 
         for (String state : history) {
             if (state.equals(optimisticNextState)) {
-                throw new KoException();
+                throw new KoException("Invalid move: Ko rule validated.");
             }
         }
-    }
-
-    private String nextState(int index, TileColour colour) {
-        StringBuilder nextBoardState = new StringBuilder(this.board.currentState());
-
-        nextBoardState.setCharAt(index, (char)(colour.asNumber() + '0'));
-
-        return nextBoardState.toString();
     }
 }

@@ -1,5 +1,6 @@
 package GoUtilities;
 
+import GoUtilities.Exceptions.InvalidBoardException;
 import GoUtilities.Exceptions.InvalidMoveException;
 
 import java.util.ArrayList;
@@ -7,10 +8,10 @@ import java.util.List;
 
 public class Board {
     private int size;
-    private TileColour currentPlayer;
+    private TurnKeeper turnKeeper;
     private String currentState;
     private List<String> history = new ArrayList<>();
-    private MoveVerifyer verifyer;
+    private MoveExecutor executor;
 
     /**
      * Construct an empty board of a given size.
@@ -19,16 +20,24 @@ public class Board {
     public Board(int size) {
         this.size = size;
         this.currentState = initialBoard(size);
-        this.currentPlayer = TileColour.BLACK;
-        this.verifyer = new MoveVerifyer(this);
+        this.turnKeeper = new TurnKeeper(2);
+        this.executor = new MoveExecutor(this);
+    }
+
+    public Board(String boardState, TileColour currentColour) throws InvalidBoardException {
+        int boardSize = (int) Math.sqrt(boardState.length());
+        if (boardSize * boardSize != boardState.length()) {
+            throw new InvalidBoardException("Board state of length unequal to n^2 provided");
+        }
+
+        this.currentState = boardState;
+        this.size = boardSize;
+        this.turnKeeper = new TurnKeeper(2, currentColour);
+        this.executor = new MoveExecutor(this);
     }
 
     int size() {
         return this.size;
-    }
-
-    TileColour currentPlayer () {
-        return currentPlayer;
     }
 
     String currentState() {
@@ -40,12 +49,14 @@ public class Board {
     }
 
     public void update(int index, TileColour colour) throws InvalidMoveException {
-        String nextState =  this.verifyer.verifyAndApply(index, colour);
+        String nextState =  this.executor.apply(index, colour);
         this.history.add(this.currentState);
         this.currentState = nextState;
+        turnKeeper.passTurn();
     }
-    public boolean equals(Board board) {
-        return this.currentState.equals(board.currentState()) && this.history.equals(board.history());
+
+    public TurnKeeper turnKeeper() {
+        return this.turnKeeper;
     }
 
     private String initialBoard (int size) {
