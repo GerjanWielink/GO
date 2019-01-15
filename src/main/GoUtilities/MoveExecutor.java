@@ -2,6 +2,9 @@ package GoUtilities;
 
 import GoUtilities.Exceptions.InvalidMoveException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MoveExecutor {
     private Board board;
     private MoveValidator validator;
@@ -30,14 +33,17 @@ public class MoveExecutor {
         nextBoardStateBuilder.setCharAt(index, (char)(colour.asNumber() + '0'));
 
         String nextBoardState = nextBoardStateBuilder.toString();
-        nextBoardState = removeCaptures(
-            nextBoardState,
-            this.board.turnKeeper().current()
-        );
 
+        // Remove stones captured by the current player (i.e. stones belonging to the next player) first
         nextBoardState = removeCaptures(
             nextBoardState,
             this.board.turnKeeper().next()
+        );
+
+        // Remove stones captured by the next player (i.e. stones belonging to the current player) second
+        nextBoardState = removeCaptures(
+            nextBoardState,
+            this.board.turnKeeper().current()
         );
 
         return nextBoardState;
@@ -45,6 +51,31 @@ public class MoveExecutor {
 
     private String removeCaptures(String boardState, TileColour colour) {
         // TODO: this
-        return boardState;
+        List<Integer> tilesOfColour = extractTilesOfColour(boardState, colour);
+        tilesOfColour.removeIf(this::isNotCaptured);
+
+        StringBuilder nextBoardStateBuilder = new StringBuilder(boardState);
+
+        tilesOfColour.forEach(index -> {
+            nextBoardStateBuilder.setCharAt(index, (char) (TileColour.EMPTY.asNumber() + '0'));
+        });
+
+        return nextBoardStateBuilder.toString();
+    }
+
+    private List<Integer> extractTilesOfColour(String boardState, TileColour colour) {
+        List<Integer> tilesOfColour = new ArrayList<>();
+
+        for (int i = 0; i < boardState.length(); i++) {
+            if(boardState.charAt(i) + '0' == colour.asNumber()) {
+                tilesOfColour.add(i);
+            }
+        }
+
+        return tilesOfColour;
+    }
+
+    private boolean isNotCaptured(int index) {
+        return false;
     }
 }

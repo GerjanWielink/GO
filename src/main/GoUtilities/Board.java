@@ -24,6 +24,9 @@ public class Board {
         this.executor = new MoveExecutor(this);
     }
 
+    /**
+     * Construct a board with an existing state.
+     */
     public Board(String boardState, TileColour currentColour) throws InvalidBoardException {
         int boardSize = (int) Math.sqrt(boardState.length());
         if (boardSize * boardSize != boardState.length()) {
