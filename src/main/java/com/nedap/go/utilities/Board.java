@@ -3,14 +3,18 @@ package com.nedap.go.utilities;
 import com.nedap.go.utilities.exceptions.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Board {
     private int size;
-    private TurnKeeper turnKeeper;
     private String currentState;
     private List<String> history = new ArrayList<>();
+
+    private TurnKeeper turnKeeper;
     private MoveExecutor executor;
+    private ScoreProvider scoreProvider;
 
     /**
      * Construct an empty board of a given size.
@@ -21,6 +25,7 @@ public class Board {
         this.currentState = initialBoard(size);
         this.turnKeeper = new TurnKeeper(2);
         this.executor = new MoveExecutor(this);
+        this.scoreProvider = new ScoreProvider(this);
     }
 
     /**
@@ -36,6 +41,7 @@ public class Board {
         this.size = boardSize;
         this.turnKeeper = new TurnKeeper(2, currentColour);
         this.executor = new MoveExecutor(this);
+        this.scoreProvider = new ScoreProvider(this);
     }
 
     /**
@@ -90,7 +96,7 @@ public class Board {
             formattedBoard.append(this.currentState.substring(i, i + this.size) + "\n");
         }
 
-        System.out.println(formattedBoard.toString());
+        System.out.print(formattedBoard.toString());
     }
 
     /**
@@ -105,5 +111,48 @@ public class Board {
             board.append(TileColour.EMPTY.asNumber());
         }
         return board.toString();
+    }
+
+    public Set<Integer> extractTilesOfColour(String boardState, TileColour colour) {
+        Set<Integer> tilesOfColour = new HashSet<>();
+
+        for (int i = 0; i < boardState.length(); i++) {
+            if(Character.getNumericValue(boardState.charAt(i)) == colour.asNumber()) {
+                tilesOfColour.add(i);
+            }
+        }
+
+        return tilesOfColour;
+    }
+
+    public Set<Integer> extractTilesOfColour(TileColour colour) {
+        return this.extractTilesOfColour(this.currentState, colour);
+    }
+
+    public ScoreProvider scoreProvider() {
+        return this.scoreProvider;
+    }
+
+    public Set<Integer> getNeighbourIndices(int index) {
+        Set<Integer> neighbours = new HashSet<>();
+
+        // not on top row
+        if (index > this.size) {
+            neighbours.add(index - this.size);
+        }
+        // not on bottom row
+        if (index < (this.size - 1) * this.size) {
+            neighbours.add(index + this.size);
+        }
+        // not on left edge
+        if (index % this.size != 0) {
+            neighbours.add(index - 1);
+        }
+        // not on right edge
+        if ((index + 1) % this.size != 0) {
+            neighbours.add(index + 1);
+        }
+
+        return neighbours;
     }
 }

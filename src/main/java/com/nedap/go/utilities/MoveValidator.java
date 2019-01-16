@@ -28,13 +28,15 @@ public class MoveValidator {
 
     private void enforceColour (TileColour colour) throws BeforeTurnException {
         if (!this.board.turnKeeper().hasTurn(colour)) {
-            throw new BeforeTurnException();
+            throw new BeforeTurnException("Player does not have the turn");
         }
     }
 
 
     private void enforceEmpty (int index) throws NotEmptyException {
-
+        if(Character.getNumericValue(this.board.currentState().charAt(index)) != TileColour.EMPTY.asNumber()) {
+            throw new NotEmptyException("Tile not empty.");
+        }
     }
 
     private void enforceKo (int index, TileColour colour) throws KoException {

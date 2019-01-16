@@ -67,7 +67,7 @@ public class MoveExecutor {
      */
     public String removeCaptures(String boardState, TileColour colour) {
         // TODO: take a long hard look at this
-        Set<Integer> tilesOfColourUnchecked = extractTilesOfColour(boardState, colour);
+        Set<Integer> tilesOfColourUnchecked = this.board.extractTilesOfColour(boardState, colour);
         Set<Integer> tilesToBeRemoved = new HashSet<>();
 
         while (tilesOfColourUnchecked.size() > 0) {
@@ -103,7 +103,7 @@ public class MoveExecutor {
             Set<Integer> group
     ) {
         Set<Integer> captureGroup = group != null ? group : new HashSet<>(Arrays.asList(index));
-        Set<Integer> neighbours = getNeighbourIndices(index);
+        Set<Integer> neighbours = this.board.getNeighbourIndices(index);
         boolean groupFree = false;
 
 
@@ -129,40 +129,5 @@ public class MoveExecutor {
         }
 
         return new Pair<>(groupFree, captureGroup);
-    }
-
-    public Set<Integer> extractTilesOfColour(String boardState, TileColour colour) {
-        Set<Integer> tilesOfColour = new HashSet<>();
-
-        for (int i = 0; i < boardState.length(); i++) {
-            if(Character.getNumericValue(boardState.charAt(i)) == colour.asNumber()) {
-                tilesOfColour.add(i);
-            }
-        }
-
-        return tilesOfColour;
-    }
-
-    public Set<Integer> getNeighbourIndices(int index) {
-        Set<Integer> neighbours = new HashSet<>();
-
-        // not on top row
-        if (index > this.board.size()) {
-            neighbours.add(index - this.board.size());
-        }
-        // not on bottom row
-        if (index < (this.board.size() - 1) * this.board.size()) {
-            neighbours.add(index + this.board.size());
-        }
-        // not on left edge
-        if (index % this.board.size() != 0) {
-            neighbours.add(index - 1);
-        }
-        // not on right edge
-        if ((index + 1) % this.board.size() != 0) {
-            neighbours.add(index + 1);
-        }
-
-        return neighbours;
     }
 }

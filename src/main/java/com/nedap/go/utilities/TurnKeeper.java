@@ -42,4 +42,8 @@ public class TurnKeeper {
     public TileColour next () {
         return this.players.get((this.current + 1) % this.players.size());
     }
+
+    public List<TileColour> players() {
+        return this.players;
+    }
 }

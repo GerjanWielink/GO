@@ -4,6 +4,9 @@ import com.nedap.go.utilities.exceptions.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -69,8 +72,6 @@ public class BoardTest {
             almostKoBoard.tryMove(11, TileColour.BLACK);
             almostKoBoard.tryMove(12, TileColour.WHITE);
             almostKoBoard.tryMove(6, TileColour.BLACK);
-
-            almostKoBoard.printCurrentState();
         } catch (InvalidBoardException e) {
             fail(e.getMessage());
         } catch (InvalidMoveException e) {
@@ -107,5 +108,30 @@ public class BoardTest {
         } catch (InvalidMoveException e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void shouldThrowInvalidBoardException() {
+        assertThrows(InvalidBoardException.class, () -> new Board("000", TileColour.BLACK));
+    }
+
+    @Test
+    public void shouldPrintCurrentState() {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outStream));
+
+        this.board.printCurrentState();
+
+        String expected = "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n";
+
+        assertEquals(expected, outStream.toString());
     }
 }
