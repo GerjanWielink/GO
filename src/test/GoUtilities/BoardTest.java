@@ -19,15 +19,15 @@ public class BoardTest {
     @Test
     public void shouldThrowOutOfBounds() {
         assertThrows(OutOfBoundsException.class, () -> {
-            this.board.update(SIZE * SIZE + 1, TileColour.BLACK);
+            this.board.tryMove(SIZE * SIZE + 1, TileColour.BLACK);
         });
     }
 
     @Test
     public void shouldAcceptValidMove() {
         try {
-            this.board.update(SIZE, TileColour.BLACK);
-            this.board.update(SIZE + 1, TileColour.WHITE);
+            this.board.tryMove(SIZE, TileColour.BLACK);
+            this.board.tryMove(SIZE + 1, TileColour.WHITE);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             fail("Unexpected exception thrown");
@@ -36,7 +36,7 @@ public class BoardTest {
 
     @Test
     public void shouldThrowBeforeTurnException() {
-        assertThrows(BeforeTurnException.class, () -> this.board.update(SIZE * SIZE + 1, TileColour.WHITE));
+        assertThrows(BeforeTurnException.class, () -> this.board.tryMove(SIZE * SIZE + 1, TileColour.WHITE));
     }
 
     @Test
@@ -47,8 +47,8 @@ public class BoardTest {
                                     "0000";  // 13:14:15:16    | | | |
         try {
             Board almostKoBoard = new Board(almostKoBoardState, TileColour.WHITE);
-            almostKoBoard.update(6, TileColour.WHITE);
-            assertThrows(KoException.class, () -> almostKoBoard.update(7, TileColour.BLACK));
+            almostKoBoard.tryMove(6, TileColour.WHITE);
+            assertThrows(KoException.class, () -> almostKoBoard.tryMove(7, TileColour.BLACK));
         } catch (InvalidBoardException e) {
             fail(e.getMessage());
         } catch (InvalidMoveException e) {

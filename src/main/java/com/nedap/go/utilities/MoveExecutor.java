@@ -1,8 +1,10 @@
-package GoUtilities;
+package com.nedap.go.utilities;
 
-import GoUtilities.Exceptions.InvalidMoveException;
+import com.nedap.go.utilities.exceptions.*;
+
 import javafx.util.Pair;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,9 +21,10 @@ public class MoveExecutor {
      * Validates and applies the move to the board. If any rules are violated
      * an exception is thrown.
      */
-    public String apply(int index, TileColour colour) throws InvalidMoveException {
+    public void apply(int index, TileColour colour) throws InvalidMoveException {
         this.validator.verify(index, colour);
-        return applyOptimistic(index, colour);
+
+        board.updateBoard(applyOptimistic(index, colour));
     }
 
     /**
@@ -37,6 +40,8 @@ public class MoveExecutor {
         StringBuilder nextBoardStateBuilder = new StringBuilder(this.board.currentState());
 
         nextBoardStateBuilder.setCharAt(index, (char)(colour.asNumber() + '0'));
+
+
 
         String nextBoardState = nextBoardStateBuilder.toString();
 
@@ -65,8 +70,13 @@ public class MoveExecutor {
         Set<Integer> tilesOfColourUnchecked = extractTilesOfColour(boardState, colour);
         Set<Integer> tilesToBeRemoved = new HashSet<>();
 
-        while(tilesOfColourUnchecked.size() > 0) {
-            Pair<Boolean, Set<Integer> > consideredTiles = checkGroupFromTile(boardState, colour,(int) tilesOfColourUnchecked.toArray()[0], null);
+        while (tilesOfColourUnchecked.size() > 0) {
+            Pair<Boolean, Set<Integer>> consideredTiles = checkGroupFromTile(
+                    boardState,
+                    colour,
+                    (int) tilesOfColourUnchecked.toArray()[0],
+                    null
+            );
 
             if(!consideredTiles.getKey()) {
                 tilesToBeRemoved.addAll(consideredTiles.getValue());
@@ -76,31 +86,39 @@ public class MoveExecutor {
         }
 
         StringBuilder nextBoardStateBuilder = new StringBuilder(boardState);
-        tilesToBeRemoved.forEach(tileIndex -> {
-            nextBoardStateBuilder.setCharAt(tileIndex, Character.forDigit(TileColour.EMPTY.asNumber(), 10));
-        });
+        for (Integer tileIndex : tilesToBeRemoved) {
+            nextBoardStateBuilder.setCharAt(
+                    tileIndex,
+                    Character.forDigit(TileColour.EMPTY.asNumber(),10)
+            );
+        }
 
         return nextBoardStateBuilder.toString();
     }
 
-    public Pair<Boolean, Set<Integer>> checkGroupFromTile(String boardState, TileColour colour, int index, Set<Integer> group) {
-        Set<Integer> captureGroup = group != null ? group : new HashSet<>();
+    public Pair<Boolean, Set<Integer>> checkGroupFromTile(
+            String boardState,
+            TileColour colour,
+            int index,
+            Set<Integer> group
+    ) {
+        Set<Integer> captureGroup = group != null ? group : new HashSet<>(Arrays.asList(index));
         Set<Integer> neighbours = getNeighbourIndices(index);
         boolean groupFree = false;
 
 
-        for (int neighbourIndex: neighbours){
+        for (int neighbourIndex: neighbours) {
             // already considered
-            if(captureGroup.contains(neighbourIndex)) {
+            if (captureGroup.contains(neighbourIndex)) {
                 continue;
             }
             // neighbour is empty
-            if(boardState.charAt(neighbourIndex) + '0' == TileColour.EMPTY.asNumber()) {
+            if (Character.getNumericValue(boardState.charAt(neighbourIndex)) == TileColour.EMPTY.asNumber()) {
                 groupFree = true;
                 continue;
             }
             // neighbour is of same colour
-            if(boardState.charAt(neighbourIndex) + '0' == colour.asNumber()) {
+            if (Character.getNumericValue(boardState.charAt(neighbourIndex)) == colour.asNumber()) {
                 captureGroup.add(neighbourIndex);
                 Pair<Boolean, Set<Integer>> neighbourResult = checkGroupFromTile(boardState, colour, neighbourIndex, captureGroup);
 
@@ -117,7 +135,7 @@ public class MoveExecutor {
         Set<Integer> tilesOfColour = new HashSet<>();
 
         for (int i = 0; i < boardState.length(); i++) {
-            if(boardState.charAt(i) + '0' == colour.asNumber()) {
+            if(Character.getNumericValue(boardState.charAt(i)) == colour.asNumber()) {
                 tilesOfColour.add(i);
             }
         }

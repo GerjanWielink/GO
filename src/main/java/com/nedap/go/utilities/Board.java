@@ -1,7 +1,6 @@
-package GoUtilities;
+package com.nedap.go.utilities;
 
-import GoUtilities.Exceptions.InvalidBoardException;
-import GoUtilities.Exceptions.InvalidMoveException;
+import com.nedap.go.utilities.exceptions.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,12 +62,6 @@ public class Board {
         return this.history;
     }
 
-    /**
-     *
-     * @param index
-     * @param colour
-     * @throws InvalidMoveException
-     */
     public void tryMove(int index, TileColour colour) throws InvalidMoveException {
         this.executor.apply(index, colour);
     }
@@ -91,12 +84,21 @@ public class Board {
         return this.turnKeeper;
     }
 
+    public void printCurrentState() {
+        StringBuilder formattedBoard = new StringBuilder();
+        for (int i = 0; i < this.size * this.size; i += this.size) {
+            formattedBoard.append(this.currentState.substring(i, i + this.size) + "\n");
+        }
+
+        System.out.println(formattedBoard.toString());
+    }
+
     /**
      *
      * @param size
      * @return
      */
-    private String initialBoard (int size) {
+    private String initialBoard(int size) {
         StringBuilder board = new StringBuilder();
 
         for (int i = 0; i < size * size; i++) {
