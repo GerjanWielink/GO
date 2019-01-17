@@ -14,4 +14,8 @@ public enum TileColour {
     public int asNumber() {
         return this.number;
     }
+
+    public TileColour other() {
+        return this == BLACK ? WHITE : BLACK;
+    }
 }

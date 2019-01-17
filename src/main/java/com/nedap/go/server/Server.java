@@ -3,13 +3,17 @@ package com.nedap.go.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Server {
     private int port;
+    private List<ClientHandler> unidentifiedConnections;
     private GameManager gameManager;
 
     public Server(int port){
         this.port = port;
+        this.unidentifiedConnections = new ArrayList<>();
         this.gameManager = new GameManager(this);
     }
 
@@ -24,13 +28,22 @@ public class Server {
 
         while (true) {
             Socket clientSocket = serverSocket.accept();
-            Logger.log("Client connected");
+            Logger.log("Anonymous client connected");
 
             ClientHandler newHandler = new ClientHandler(this, clientSocket);
             newHandler.start();
 
-            this.gameManager.addPlayer(newHandler);
+            this.unidentifiedConnections.add(newHandler);
         }
     }
 
+    public void identify(ClientHandler client) {
+        String username = client.username();
+
+        if (username != null) {
+            this.unidentifiedConnections.remove(client);
+            Logger.log("Client " + username + " identified");
+            this.gameManager.addPlayer(client);
+        }
+    }
 }
