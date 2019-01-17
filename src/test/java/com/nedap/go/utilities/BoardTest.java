@@ -99,7 +99,11 @@ public class BoardTest {
 
         try {
             Board largeCaptureBoard = new Board(initialBoard, TileColour.WHITE);
+            largeCaptureBoard.printCurrentState();
+
             largeCaptureBoard.tryMove(37, TileColour.WHITE);
+
+            largeCaptureBoard.printCurrentState();
 
             assertEquals(expectedBoard, largeCaptureBoard.currentState());
 
@@ -122,15 +126,15 @@ public class BoardTest {
 
         this.board.printCurrentState();
 
-        String expected = "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n" +
-                        "000000000\n";
+        String expected = "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
+                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n";
 
         assertEquals(expected, outStream.toString());
     }

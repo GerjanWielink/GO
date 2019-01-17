@@ -92,8 +92,12 @@ public class Board {
 
     public void printCurrentState() {
         StringBuilder formattedBoard = new StringBuilder();
-        for (int i = 0; i < this.size * this.size; i += this.size) {
-            formattedBoard.append(this.currentState.substring(i, i + this.size) + "\n");
+        String stateWithTiles = this.currentState.replaceAll("0", "⛶");
+        stateWithTiles = stateWithTiles.replaceAll("1", "⚫");
+        stateWithTiles = stateWithTiles.replaceAll("2", "⚪");
+
+    for (int i = 0; i < this.size * this.size; i += this.size) {
+            formattedBoard.append(stateWithTiles.substring(i, i + this.size) + "\n");
         }
 
         System.out.print(formattedBoard.toString());
