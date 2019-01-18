@@ -48,7 +48,7 @@ public class Board {
      *
      * @return
      */
-    int size() {
+    public int size() {
         return this.size;
     }
 
@@ -56,7 +56,7 @@ public class Board {
      *
      * @return
      */
-    String currentState() {
+    public String currentState() {
         return this.currentState;
     }
 
@@ -70,6 +70,16 @@ public class Board {
 
     public void tryMove(int index, TileColour colour) throws InvalidMoveException {
         this.executor.apply(index, colour);
+    }
+
+    /**
+     *
+     * @param colour player who passes the move
+     * @return boolean indicating if a next move is required
+     * @throws InvalidMoveException thrown is the player does not hold the turn
+     */
+    public boolean tryPass(TileColour colour) throws InvalidMoveException {
+        return this.executor.applyPass(colour);
     }
 
     /**

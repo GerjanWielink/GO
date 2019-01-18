@@ -2,23 +2,24 @@ package com.nedap.go.server;
 
 import com.nedap.go.protocol.ClientCommand;
 import com.nedap.go.utilities.TileColour;
+
+
 public class CommandRouter {
     private ClientHandler handler;
-
-    public static void main (String[] args) {
-        String test = "HANDSHAKE+HOIDOEI+NEE+HAHA";
-        System.out.println(test.split("\\+", 2)[1]);
-    }
 
     public CommandRouter(ClientHandler handler) {
         this.handler = handler;
     }
 
+    /**
+     * Maps commands to their respective handler
+     * @param message provided command
+     */
     public void route(String message) {
         ClientCommand command = getCommandFromMessage(message);
 
         if (command == null) {
-            handler.handleUnknownCommand();
+            handler.handleUnknownCommand(message);
             return;
         }
 
@@ -35,16 +36,28 @@ public class CommandRouter {
                 this.handleMoveCommand(message);
                 break;
 
+            case PASS:
+                this.handlePassCommand(message);
+                break;
+
+            case EXIT:
+                this.handleExitCommand(message);
+                break;
+
             default:
-                handler.handleUnknownCommand();
+                handler.handleUnknownCommand(message);
         }
     }
 
-    // HANDSHAKE+$USERNAME
+
+    /**
+     * HANDSHAKE+$USERNAME
+     * @param message provided command
+     */
     private void handleHandshakeCommand(String message) {
-        String[] tokens = message.split("\\+", 2);
+        String[] tokens = message.split("\\+");
         if (tokens.length != 2) {
-            handler.handleUnknownCommand();
+            handler.handleUnknownCommand("Error parsing command. Invalid token length. Remember that usernames cannot contain \"+\" signs");
             return;
         }
 
@@ -53,20 +66,24 @@ public class CommandRouter {
         handler.handleHandshakeCommand(username);
     }
 
-    // SET_CONFIG+$GAME_ID+$PREFERRED_COLO+$BOARD_SIZE
+
+    /**
+     * SET_CONFIG+$GAME_ID+$PREFERRED_COLO+$BOARD_SIZE
+     * @param message provided command
+     */
     private void handleSetConfigCommand(String message) {
-        String[] tokens = message.split("\\+", 4);
+        String[] tokens = message.split("\\+");
 
         TileColour colour = TileColour.BLACK;
         int boardSize = 19;
 
-        if (tokens.length < 2) { // no game_id
-            handler.handleUnknownCommand();
+        if (tokens.length < 2 || tokens.length > 4) { // no game_id or too many params
+            handler.handleUnknownCommand("Error parsing command. Invalid token length.");
             return;
         }
 
         if (tokens.length > 2) { // preferred color
-            colour = tokens[2] == "2" ? TileColour.WHITE : TileColour.BLACK;
+            colour = tokens[2].equals("2") ? TileColour.WHITE : TileColour.BLACK;
         }
 
         if (tokens.length > 3) {
@@ -80,13 +97,55 @@ public class CommandRouter {
         handler.handleSetConfigCommand(colour, boardSize);
     }
 
-    // MOVE+$GAME_ID+$PLAYER+$TILE_INDEX
+    /**
+     * MOVE+$GAME_ID+$PLAYER+$TILE_INDEX
+     * @param message provided command
+     */
     private void handleMoveCommand(String message) {
         String[] tokens = message.split("\\+");
 
         if (tokens.length != 4) {
-            handler.handleUnknownCommand();
+            handler.handleUnknownCommand("Error parsing command. Invalid token length.");
         }
+
+        // TODO: Verification on gameId and playername (redundant but meh)
+
+        String playerName = tokens[2];
+
+        try {
+            int gameId = Integer.parseInt(tokens[1], 10);
+            int index = Integer.parseInt(tokens[3], 10);
+
+            if (index == -1) {
+                handler.handlePassCommand();
+                return;
+            }
+
+
+            handler.handleMoveCommand(index);
+        } catch (NumberFormatException e) {
+            handler.handleUnknownCommand("Error parsing command. Argument provided is not a valid integer.");
+        }
+
+    }
+
+    /**
+     * Pass+$GAME_ID+$PLAYER_NAME
+     * @param message provided command
+     */
+    private void handlePassCommand(String message) {
+        String[] tokens = message.split("\\+");
+
+        if(tokens.length != 3) {
+            handler.handleUnknownCommand("Error parsing command. Invalid token length.");
+            return;
+        }
+
+        handler.handlePassCommand();
+    }
+
+    private void handleExitCommand(String message) {
+        //
     }
 
     private ClientCommand getCommandFromMessage (String message) {

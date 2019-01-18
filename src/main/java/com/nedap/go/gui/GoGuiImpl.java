@@ -2,10 +2,13 @@ package com.nedap.go.gui;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.paint.PhongMaterial;
@@ -242,8 +245,9 @@ public class GoGuiImpl extends Application {
 
 		if (board[x][y] != null) {
 			root.getChildren().remove(board[x][y]);
+			addOnHoverTile(x, y, true);
 		}
-		board[x][y] = null;
+		addOnHoverTile(x, y, true);
 	}
 
 	protected void addAreaIndicator(int x, int y, boolean white) throws InvalidCoordinateException {
@@ -265,6 +269,32 @@ public class GoGuiImpl extends Application {
 			board[x][y] = areaStone;
 			root.getChildren().add(areaStone);
 		}
+	}
+
+
+
+	/**
+	 * Hoverable tiles
+	 * @param x
+	 * @param y
+	 * @param white
+	 * @throws InvalidCoordinateException
+	 */
+	protected void addOnHoverTile(int x, int y, boolean white) throws InvalidCoordinateException {
+		checkCoordinates(x, y);
+
+		Rectangle hoverArea = new Rectangle((
+				(x + 1) * currentSquareSize) - currentSquareSize / 4,
+				((y + 1) * currentSquareSize) - currentSquareSize / 4,
+				currentSquareSize / 2,
+				currentSquareSize / 2
+		);
+		hoverArea.setFill(Color.TRANSPARENT);
+
+		hoverArea.setOnMouseEntered(System.out::println);
+
+		board[x][y] = hoverArea;
+		root.getChildren().add(hoverArea);
 	}
 
 	protected void addHintIndicator(int x, int y) throws InvalidCoordinateException {

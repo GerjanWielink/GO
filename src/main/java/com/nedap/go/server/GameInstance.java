@@ -1,8 +1,10 @@
 package com.nedap.go.server;
 
+import com.nedap.go.protocol.ServerMessageBuilder;
 import com.nedap.go.server.exceptions.GameFullException;
 import com.nedap.go.utilities.Board;
 import com.nedap.go.utilities.TileColour;
+import com.nedap.go.utilities.exceptions.InvalidMoveException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +22,7 @@ public class GameInstance {
 
     public GameInstance(int id) {
         this.id = id;
-        this.gameState = GameState.AWAITING_PLAYER_1;
+        this.gameState = GameState.WAITING;
         this.hasConfig = false;
 
         Logger.log("New empty game instance created");
@@ -28,7 +30,7 @@ public class GameInstance {
 
     public GameInstance(int id, ClientHandler client) {
         this.id = id;
-        this.gameState = GameState.AWAITING_CONFIG;
+        this.gameState = GameState.WAITING;
         this.hasConfig = false;
         try {
             this.addPlayer(client);
@@ -78,10 +80,39 @@ public class GameInstance {
         throw new GameFullException();
     }
 
+    // TODO: implement boolean similar to tryPass indicating if there are any valid moves left
+    public void tryMove(int index, TileColour colour) throws InvalidMoveException {
+        this.board.tryMove(index, colour);
+
+        playerOne.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, index, colour, this));
+        playerTwo.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, index, colour, this));
+    }
+
+    public void tryPass(TileColour colour) throws InvalidMoveException {
+       if(!this.board.tryPass(colour)) {
+           this.endGame();
+       } else {
+           this.playerOne.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, -1, colour, this));
+           this.playerTwo.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, -1, colour, this));
+       }
+    }
+
     public void startGame() {
-        this.gameState = GameState.RUNNING;
-        this.playerOne.notifyGameStart();
-        this.playerTwo.notifyGameStart();
+        this.gameState = GameState.PLAYING;
+        this.playerOne.notifyGameStart(this.playerRoles.get(this.playerOne));
+        this.playerTwo.notifyGameStart(this.playerRoles.get(this.playerTwo));
+    }
+
+    public void endGame() {
+        this.gameState = GameState.FINISHED;
+
+        Map<TileColour, Double> score = this.board.scoreProvider().getScore();
+        TileColour winningColour = score.get(TileColour.BLACK) > score.get(TileColour.WHITE) ? TileColour.BLACK : TileColour.WHITE;
+
+        String winnerName = this.playerRoles.get(this.playerOne).equals(winningColour) ? playerOne.username() : playerTwo.username();
+
+        this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
+        this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
     }
 
     public boolean isFull() {
@@ -92,8 +123,11 @@ public class GameInstance {
         return this.id;
     }
 
-    private void requestConfig() {
-        // TODO: this.
+    public Board board() {
+        return this.board;
     }
 
+    public GameState gameState() {
+        return this.gameState;
+    }
 }

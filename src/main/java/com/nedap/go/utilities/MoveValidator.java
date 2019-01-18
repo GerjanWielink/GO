@@ -20,6 +20,10 @@ public class MoveValidator {
         enforceKo(index, colour);
     }
 
+    public void verifyPass(TileColour colour) throws InvalidMoveException {
+        enforceColour(colour);
+    }
+
     private void enforceBounds (int index) throws OutOfBoundsException {
         if (index < 0 || index > board.size() * board.size()) {
             throw new OutOfBoundsException();

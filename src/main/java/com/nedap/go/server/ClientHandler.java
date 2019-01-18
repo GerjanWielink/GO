@@ -1,11 +1,12 @@
 package com.nedap.go.server;
 
 import com.nedap.go.protocol.ServerMessageBuilder;
-import com.nedap.go.server.exceptions.YouAreNotTheCommanderException;
 import com.nedap.go.utilities.TileColour;
+import com.nedap.go.utilities.exceptions.InvalidMoveException;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 
 public class ClientHandler extends Thread {
     private Server server;
@@ -13,6 +14,7 @@ public class ClientHandler extends Thread {
     private String username;
     private GameInstance game;
     private boolean isGameLeader;
+    private TileColour colour;
     private BufferedReader inStream;
     private BufferedWriter outStream;
     private CommandRouter commandRouter;
@@ -47,8 +49,27 @@ public class ClientHandler extends Thread {
         this.consecutiveUnknownCommands = 0;
     }
 
-    public void handleUnknownCommand() {
+    // HANDLERS
+    public void handleMoveCommand(int index) {
+        try {
+            this.game.tryMove(index, this.colour);
+        } catch (InvalidMoveException e) {
+            this.sendOutbound(ServerMessageBuilder.invalidMove(e.getMessage()));
+        }
+    }
+
+    public void handlePassCommand() {
+        try {
+            this.game.tryPass(this.colour);
+        } catch (InvalidMoveException e) {
+            this.sendOutbound(ServerMessageBuilder.invalidMove(e.getMessage()));
+        }
+    }
+
+    public void handleUnknownCommand(String message) {
         this.consecutiveUnknownCommands++;
+
+        this.sendOutbound(ServerMessageBuilder.unkownCommand(message));
 
         if(this.consecutiveUnknownCommands > 10) {
             try {
@@ -61,7 +82,7 @@ public class ClientHandler extends Thread {
 
     public void handleHandshakeCommand(String name) {
         if (this.username != null) {
-            this.handleUnknownCommand();
+            this.handleUnknownCommand("User allready identified");
             return;
         }
 
@@ -73,15 +94,17 @@ public class ClientHandler extends Thread {
 
     public void handleSetConfigCommand(TileColour preferredColour, int boardSize) {
         if (!this.isGameLeader) {
-            // TODO
+            // TODO: You are not the commander!
             return;
         }
 
+        this.resetUnknownCommandCount();
         this.game.provideConfig(preferredColour, boardSize);
     }
 
-    public void notifyGameStart() {
-
+    public void notifyGameStart(TileColour colour) {
+        this.colour = colour;
+        this.sendOutbound(ServerMessageBuilder.acknowledgeConfig(this.username, colour, this.game));
     }
 
     public synchronized void addToGame(GameInstance gameInstance, boolean isGameLeader) {
@@ -95,12 +118,10 @@ public class ClientHandler extends Thread {
         }
     }
 
-
-    public String username() {
-        return this.username;
-    }
-
-
+    /**
+     * Send a message to this handler.
+     * @param message
+     */
     public void sendOutbound(String message) {
         try {
             this.outStream.write(message);
@@ -111,6 +132,10 @@ public class ClientHandler extends Thread {
         }
     }
 
+    /**
+     * Remove the socket from the server
+     * @throws IOException
+     */
     private void disconnect() throws IOException {
         try {
             this.inStream.close();
@@ -123,5 +148,15 @@ public class ClientHandler extends Thread {
             String username = this.username != null ? this.username : "anoymous";
             Logger.error("Client \"" + username +  "\" kicked from server..");
         }
+    }
+
+    // GETTERS
+
+    /**
+     *
+     * @return
+     */
+    public String username() {
+        return this.username;
     }
 }

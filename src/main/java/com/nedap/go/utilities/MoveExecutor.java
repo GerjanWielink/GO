@@ -28,6 +28,24 @@ public class MoveExecutor {
     }
 
     /**
+     *
+     * @param colour player doing the pass
+     * @return boolean indicating if a next move is required
+     * @throws InvalidMoveException
+     */
+    public boolean applyPass(TileColour colour) throws  InvalidMoveException {
+        this.validator.verifyPass(colour);
+
+        if (board.turnKeeper().passed()){
+            // TODO: end the game.
+            return false;
+        }
+
+        board.turnKeeper().pass();
+        return true;
+    }
+
+    /**
      * Applies a move without checking any game rules. Assumes these rules are checked elsewhere
      * and enables the checking of rules which need to look at the outcome of the move. Does not actually
      * do anything to the Board state by itself.
