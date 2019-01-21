@@ -1,6 +1,5 @@
 package com.nedap.go.gui;
 
-import com.nedap.go.server.CommandRouter;
 import com.nedap.go.utilities.TileColour;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -8,6 +7,8 @@ import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -18,6 +19,8 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Sphere;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ public class GoGuiImpl extends Application {
 	private Stage primaryStage = null;
 	private Node hint = null;
 	private TileColour playerColour;
+	private Text text;
 
 	private boolean mode3D = true;
 	private boolean showStartupAnimation = false;
@@ -51,7 +55,8 @@ public class GoGuiImpl extends Application {
 	private static final CountDownLatch waitForConfigurationLatch = new CountDownLatch(1);
 	private static final CountDownLatch initializationLatch = new CountDownLatch(1);
 
-	private OnClickHandler onClickHandler;
+	private OnClickTileHandler onClickTileHandler;
+	private OnClickPassHandler onClickPassHandler;
 
 	private static GoGuiImpl instance;
 
@@ -156,8 +161,9 @@ public class GoGuiImpl extends Application {
 		root = new Group();
 		board = new Node[currentBoardSize][currentBoardSize];
 
-		Scene scene = new Scene(root, (currentBoardSize + 1) * currentSquareSize,
-				(currentBoardSize + 1) * currentSquareSize);
+		Scene scene = new Scene(root,
+				(currentBoardSize + 1) * currentSquareSize,
+				(currentBoardSize + 2) * currentSquareSize);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
@@ -165,6 +171,8 @@ public class GoGuiImpl extends Application {
 		scene.setFill(pattern);
 
 		initBoardLines();
+		addPassButton();
+		addMessage();
 	}
 
 	private void initBoardLines() {
@@ -377,14 +385,9 @@ public class GoGuiImpl extends Application {
 				newStone.setMaterial(transparentMaterial);
 			});
 
-			OnClickHandler handler = this.onClickHandler;
+			OnClickTileHandler handler = this.onClickTileHandler;
 
-			newStone.setOnMouseClicked(new EventHandler<MouseEvent>() {
-				@Override
-				public void handle(MouseEvent event) {
-					handler.handle(x, y);
-				}
-			});
+			newStone.setOnMouseClicked(event -> handler.handle(x, y));
 
 			board[x][y] = newStone;
 			root.getChildren().add(newStone);
@@ -405,11 +408,44 @@ public class GoGuiImpl extends Application {
 		}
 	}
 
-	protected void setOnClickHandler(OnClickHandler onClickHandler) {
-		this.onClickHandler = onClickHandler;
+	protected void setOnClickTileHandler(OnClickTileHandler onClickTileHandler) {
+		this.onClickTileHandler = onClickTileHandler;
 	}
+
+	protected void setOnClickPassHandler(OnClickPassHandler onClickPassHandler) {
+		this.onClickPassHandler = onClickPassHandler;
+	}
+
 	protected void setPlayerColour (TileColour colour) {
 		this.playerColour = colour;
+	}
+
+
+	private void addPassButton () {
+		Button passButton = new Button("PASS");
+		passButton.setLayoutX((currentBoardSize / 2  + 1) * currentSquareSize);
+		passButton.setLayoutY((currentBoardSize + 1 ) * currentSquareSize);
+		passButton.setOnMouseClicked(event -> onClickPassHandler.handle());
+
+		root.getChildren().add(passButton);
+	}
+
+	private void addMessage () {
+		this.text = new Text("");
+
+		this.text.setFont(Font.font ("Verdana", 14));
+		this.text.setFill(Color.WHITE);
+
+		this.text.setLayoutY(currentSquareSize / 2);
+		this.text.setLayoutX(currentSquareSize);
+
+		root.getChildren().add(this.text);
+	}
+
+	public void updateTextMessage(String message) {
+		root.getChildren().remove(this.text);
+		this.text.setText(message);
+		root.getChildren().add(this.text);
 	}
 
 }

@@ -1,7 +1,8 @@
 package com.nedap.go.client;
 
 import com.nedap.go.gui.GoGuiIntegrator;
-import com.nedap.go.gui.OnClickHandler;
+import com.nedap.go.gui.OnClickPassHandler;
+import com.nedap.go.gui.OnClickTileHandler;
 import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.TileColour;
 import javafx.util.Pair;
@@ -10,19 +11,37 @@ public class GuiConnector {
     private GoGuiIntegrator goGui;
     private int boardSize;
 
-    public GuiConnector(int boardSize, OnClickHandler onClickHandler, TileColour colour) {
+    public GuiConnector(int boardSize, OnClickTileHandler onClickTileHandler, OnClickPassHandler onClickPassHandler, TileColour colour) {
         this.boardSize = boardSize;
 
-        this.goGui = new GoGuiIntegrator(true, true, boardSize, onClickHandler, colour);
+        this.goGui = new GoGuiIntegrator(
+                true,
+                true,
+                boardSize,
+                onClickTileHandler,
+                onClickPassHandler,
+                colour);
         this.goGui.startGUI();
         this.goGui.setBoardSize(boardSize);
         this.clearBoard();
     }
 
+    public static void main (String[] args) {
+        GoGuiIntegrator integrator = new GoGuiIntegrator(
+                true,
+                true,
+                9,
+                (x, y) -> System.out.println(x + "," + y),
+                () -> System.out.println("PASS!"),
+                TileColour.BLACK);
+        integrator.startGUI();
+        integrator.setBoardSize(9);
+        integrator.clearBoard();
+        integrator.updateTextMessage("Welcome to Go! You are playing Black, White has the turn");
+    }
+
     // TODO: difference detection maybe
     public void drawBoard(String boardState) {
-        Logger.log(boardState);
-
         if (boardState.length() != boardSize * boardSize) {
             Logger.log("NOPE!");
             return;
@@ -53,6 +72,10 @@ public class GuiConnector {
                 this.goGui.removeStone(i, j);
             }
         }
+    }
+
+    public void displayMessage(String message) {
+        this.goGui.updateTextMessage(message);
     }
 
     private Pair<Integer, Integer> coordinates(int index) {

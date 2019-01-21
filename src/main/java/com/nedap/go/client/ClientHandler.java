@@ -65,8 +65,8 @@ public class ClientHandler {
         this.gameHandler = new GameHandler(boardSize, colour, state, this);
     }
 
-    public void handleAcknowledgeMove(String gameState) {
-        this.gameHandler.update(gameState);
+    public void handleAcknowledgeMove(String move, String gameState) {
+        this.gameHandler.update(move, gameState);
     }
 
     public void promptPort() {
@@ -85,9 +85,21 @@ public class ClientHandler {
         this.sendOutBound(ClientCommandBuilder.handshake(this.username));
     }
 
-    public void handleAcknowledgeHandshake(int gameId, boolean isLeader) {
+    public void handleUnkownCommand(String message) {
+        this.gameHandler.displayMessage("Unknown server message: " + message);
+    }
+
+    public void handleAcknowledgeHandshake(int gameId) {
         this.gameId = gameId;
     }
+
+    public void handleInvalidMove(String message) {
+        this.gameHandler.displayMessage("Invalid move: " + message);
+    }
+
+    public void handleGameFinished() {}
+
+    public void handleUpdateStatus() {}
 
     public void handleRequestConfig() {
         TileColour preferredColour = (TileColour) promptInput(

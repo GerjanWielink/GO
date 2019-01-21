@@ -17,13 +17,19 @@ public class GoGuiIntegrator implements GoGui {
 	 *                             Otherwise a 2D representation will be used.
 	 * @param boardSize            the desired initial board size.
 	 */
-	public GoGuiIntegrator(boolean showStartupAnimation, boolean mode3D, int boardSize, OnClickHandler handler, TileColour colour) {
+	public GoGuiIntegrator(boolean showStartupAnimation, boolean mode3D, int boardSize, OnClickTileHandler moveHandler, OnClickPassHandler passHandler, TileColour colour) {
 		createWrappedObject();
 		wrappee.setShowStartupAnimation(showStartupAnimation);
 		wrappee.setMode3D(mode3D);
 		wrappee.setInitialBoardSize(boardSize);
-		wrappee.setOnClickHandler(handler);
+		wrappee.setOnClickTileHandler(moveHandler);
+		wrappee.setOnClickPassHandler(passHandler);
 		wrappee.setPlayerColour(colour);
+	}
+
+
+	public synchronized void updateTextMessage(String message) {
+		Platform.runLater(() -> wrappee.updateTextMessage(message));
 	}
 
 

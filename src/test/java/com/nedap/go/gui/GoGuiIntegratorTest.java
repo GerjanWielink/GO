@@ -12,7 +12,7 @@ public class GoGuiIntegratorTest {
 
 	@Test
 	public void boardSizeTest() {
-		GoGuiIntegrator goGuiIntegrator = new GoGuiIntegrator(true, true, 10, (x, y) -> {System.out.println(x + "," + y);}, TileColour.BLACK);
+		GoGuiIntegrator goGuiIntegrator = new GoGuiIntegrator(true, true, 10, (x, y) -> {}, () -> {}, TileColour.BLACK);
 		assertEquals(10, goGuiIntegrator.getBoardSize());
 	}
 

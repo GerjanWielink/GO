@@ -37,8 +37,19 @@ public class CommandRouter {
                 this.handleAcknowledgeMove(message);
                 break;
 
+            case INVALID_MOVE:
+                this.handleInvalidMove(message);
+                break;
+
+            case GAME_FINISHED:
+                this.handleGameFinished(message);
+                break;
+
+            case UPDATE_STATUS:
+                break;
+
             default:
-                Logger.log("Unknow command: " + message);
+                this.gameHandler.handleUnkownCommand(message);
         }
     }
 
@@ -54,12 +65,27 @@ public class CommandRouter {
             int gameId = Integer.parseInt(tokens[1], 10);
             boolean isLeader = tokens[2].equals("1");
 
-            this.gameHandler.handleAcknowledgeHandshake(gameId, isLeader);
+            this.gameHandler.handleAcknowledgeHandshake(gameId);
         } catch (NumberFormatException e ) {
             // TODO: handleInvalidCommand
             return;
         }
+    }
 
+    public void handleGameFinished(String message) {
+        
+    }
+
+    private void handleInvalidMove(String message) {
+        String[] tokens = message.split("\\+");
+
+        if (tokens.length != 2) {
+            // TODO: handleInvalidCommand
+            return;
+        }
+
+        String errorMessage = tokens[1];
+        this.gameHandler.handleInvalidMove(errorMessage);
     }
 
     private void handleAcknowledgeMove(String message) {
@@ -70,9 +96,10 @@ public class CommandRouter {
             return;
         }
 
+        String move = tokens[2];
         String gameState = tokens[3];
 
-        this.gameHandler.handleAcknowledgeMove(gameState);
+        this.gameHandler.handleAcknowledgeMove(move, gameState);
     }
 
 

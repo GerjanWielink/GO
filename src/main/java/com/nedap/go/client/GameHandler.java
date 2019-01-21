@@ -15,7 +15,7 @@ public class GameHandler {
     public GameHandler(int size, TileColour colour, String stateString, ClientHandler handler) {
         this.handler = handler;
         this.boardSize = size;
-        this.guiConnector = new GuiConnector(size, this::tryMove, colour);
+        this.guiConnector = new GuiConnector(size, this::tryMove, this::pass, colour);
         this.readGameState(stateString);
     }
 
@@ -27,7 +27,18 @@ public class GameHandler {
         ));
     }
 
-    public void update(String stateString) {
+    private void pass() {
+        this.handler.sendOutBound(ClientCommandBuilder.pass(
+                this.handler.gameId(),
+                this.handler.username()
+        ));
+    }
+
+    public void displayMessage(String message) {
+        this.guiConnector.displayMessage(message);
+    }
+
+    public void update(String move, String stateString) {
         this.readGameState(stateString);
     }
 
