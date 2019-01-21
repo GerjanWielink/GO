@@ -19,7 +19,7 @@ public class MoveExecutor {
 
     /**
      * Validates and applies the move to the board. If any rules are violated
-     * an exception is thrown.
+     * an exceptions is thrown.
      */
     public void apply(int index, TileColour colour) throws InvalidMoveException {
         this.validator.verify(index, colour);

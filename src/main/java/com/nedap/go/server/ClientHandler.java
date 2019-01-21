@@ -6,7 +6,6 @@ import com.nedap.go.utilities.exceptions.InvalidMoveException;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Map;
 
 public class ClientHandler extends Thread {
     private Server server;
@@ -146,7 +145,7 @@ public class ClientHandler extends Thread {
             this.socket.close();
             // TODO: Remove from game instance
             String username = this.username != null ? this.username : "anoymous";
-            Logger.error("Client \"" + username +  "\" kicked from server..");
+            Logger.error("ClientHandler \"" + username +  "\" kicked from server..");
         }
     }
 

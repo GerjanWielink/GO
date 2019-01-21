@@ -31,10 +31,7 @@ public class Server {
         ServerSocket serverSocket = new ServerSocket(port);
         Logger.log("Server listening for connections on port " + port);
 
-        serverSocket.setSoTimeout(200);
-
         while (run) {
-            Logger.log("LISTENING!!!");
             try {
                 Socket clientSocket = serverSocket.accept();
                 Logger.log("Anonymous client connected");
@@ -58,7 +55,7 @@ public class Server {
 
         if (username != null) {
             this.unidentifiedConnections.remove(client);
-            Logger.log("Client " + username + " identified");
+            Logger.log("ClientHandler " + username + " identified");
             this.gameManager.addPlayer(client);
         }
     }

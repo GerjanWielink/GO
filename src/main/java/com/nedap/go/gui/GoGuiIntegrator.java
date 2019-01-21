@@ -1,5 +1,6 @@
 package com.nedap.go.gui;
 
+import com.nedap.go.utilities.TileColour;
 import javafx.application.Platform;
 
 public class GoGuiIntegrator implements GoGui {
@@ -16,12 +17,15 @@ public class GoGuiIntegrator implements GoGui {
 	 *                             Otherwise a 2D representation will be used.
 	 * @param boardSize            the desired initial board size.
 	 */
-	public GoGuiIntegrator(boolean showStartupAnimation, boolean mode3D, int boardSize) {
+	public GoGuiIntegrator(boolean showStartupAnimation, boolean mode3D, int boardSize, OnClickHandler handler, TileColour colour) {
 		createWrappedObject();
 		wrappee.setShowStartupAnimation(showStartupAnimation);
 		wrappee.setMode3D(mode3D);
 		wrappee.setInitialBoardSize(boardSize);
+		wrappee.setOnClickHandler(handler);
+		wrappee.setPlayerColour(colour);
 	}
+
 
 	@Override
 	public synchronized void setBoardSize(int size) {

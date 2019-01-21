@@ -1,28 +1,28 @@
 package com.nedap.go.client;
 
 import com.nedap.go.gui.GoGuiIntegrator;
+import com.nedap.go.gui.OnClickHandler;
 import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.TileColour;
 import javafx.util.Pair;
 
 public class GuiConnector {
     private GoGuiIntegrator goGui;
     private int boardSize;
 
-    public GuiConnector(int boardSize) {
+    public GuiConnector(int boardSize, OnClickHandler onClickHandler, TileColour colour) {
         this.boardSize = boardSize;
 
-        this.goGui = new GoGuiIntegrator(true, true, boardSize);
+        this.goGui = new GoGuiIntegrator(true, true, boardSize, onClickHandler, colour);
         this.goGui.startGUI();
         this.goGui.setBoardSize(boardSize);
-    }
-
-    public static void main (String[] args) {
-        GuiConnector connector = new GuiConnector(19);
-        connector.clearBoard();
+        this.clearBoard();
     }
 
     // TODO: difference detection maybe
     public void drawBoard(String boardState) {
+        Logger.log(boardState);
+
         if (boardState.length() != boardSize * boardSize) {
             Logger.log("NOPE!");
             return;

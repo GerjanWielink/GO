@@ -68,8 +68,8 @@ public class ServerMessageBuilder {
     }
 
     private static String gameStateStringFromGameInstance(GameInstance gameInstance) {
-        return (gameInstance.gameState().toString() + ":") +
-                gameInstance.board().turnKeeper().current().asNumber() + ":" +
+        return (gameInstance.gameState().toString() + ";") +
+                gameInstance.board().turnKeeper().current().asNumber() + ";" +
                 gameInstance.board().currentState();
     }
 
@@ -79,8 +79,8 @@ public class ServerMessageBuilder {
 
     private static String scoreFromMap(Map<TileColour, Double> score) {
         return TileColour.BLACK.asNumber() +
-                ":" + score.get(TileColour.BLACK) +
-                ":" + TileColour.WHITE.asNumber() +
-                ":" + score.get(TileColour.WHITE);
+                ";" + score.get(TileColour.BLACK) +
+                ";" + TileColour.WHITE.asNumber() +
+                ";" + score.get(TileColour.WHITE);
     }
 }

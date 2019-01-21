@@ -1,8 +1,9 @@
 package com.nedap.go.gui;
 
+import com.nedap.go.server.CommandRouter;
+import com.nedap.go.utilities.TileColour;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -37,6 +38,7 @@ public class GoGuiImpl extends Application {
 	private Group root = null;
 	private Stage primaryStage = null;
 	private Node hint = null;
+	private TileColour playerColour;
 
 	private boolean mode3D = true;
 	private boolean showStartupAnimation = false;
@@ -44,9 +46,12 @@ public class GoGuiImpl extends Application {
 	private final PhongMaterial blackMaterial = new PhongMaterial();
 	private final PhongMaterial whiteMaterial = new PhongMaterial();
 	private final PhongMaterial yellowMaterial = new PhongMaterial();
+	private final PhongMaterial transparentMaterial = new PhongMaterial();
 
 	private static final CountDownLatch waitForConfigurationLatch = new CountDownLatch(1);
 	private static final CountDownLatch initializationLatch = new CountDownLatch(1);
+
+	private OnClickHandler onClickHandler;
 
 	private static GoGuiImpl instance;
 
@@ -101,6 +106,8 @@ public class GoGuiImpl extends Application {
 		whiteMaterial.setSpecularColor(Color.LIGHTBLUE);
 		yellowMaterial.setDiffuseColor(Color.YELLOW);
 		yellowMaterial.setSpecularColor(Color.LIGHTBLUE);
+		transparentMaterial.setDiffuseColor(Color.TRANSPARENT);
+		transparentMaterial.setSpecularColor(Color.TRANSPARENT);
 	}
 
 	private void runStartupAnimation() {
@@ -247,7 +254,7 @@ public class GoGuiImpl extends Application {
 			root.getChildren().remove(board[x][y]);
 			addOnHoverTile(x, y, true);
 		}
-		addOnHoverTile(x, y, true);
+		addOnHoverTile(x, y, this.playerColour == TileColour.WHITE);
 	}
 
 	protected void addAreaIndicator(int x, int y, boolean white) throws InvalidCoordinateException {
@@ -269,32 +276,6 @@ public class GoGuiImpl extends Application {
 			board[x][y] = areaStone;
 			root.getChildren().add(areaStone);
 		}
-	}
-
-
-
-	/**
-	 * Hoverable tiles
-	 * @param x
-	 * @param y
-	 * @param white
-	 * @throws InvalidCoordinateException
-	 */
-	protected void addOnHoverTile(int x, int y, boolean white) throws InvalidCoordinateException {
-		checkCoordinates(x, y);
-
-		Rectangle hoverArea = new Rectangle((
-				(x + 1) * currentSquareSize) - currentSquareSize / 4,
-				((y + 1) * currentSquareSize) - currentSquareSize / 4,
-				currentSquareSize / 2,
-				currentSquareSize / 2
-		);
-		hoverArea.setFill(Color.TRANSPARENT);
-
-		hoverArea.setOnMouseEntered(System.out::println);
-
-		board[x][y] = hoverArea;
-		root.getChildren().add(hoverArea);
 	}
 
 	protected void addHintIndicator(int x, int y) throws InvalidCoordinateException {
@@ -366,6 +347,69 @@ public class GoGuiImpl extends Application {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+	////////////////////////////////////
+	////////////////////////////////////
+	//////////// CUSTOM CODE ///////////
+	////////////////////////////////////
+	////////////////////////////////////
+	/**
+	 * Hoverable tiles
+	 * @throws InvalidCoordinateException
+	 */
+	protected void addOnHoverTile(int x, int y, boolean white) throws InvalidCoordinateException {
+		checkCoordinates(x, y);
+
+		if (mode3D) {
+			Sphere newStone = new Sphere(currentSquareSize / 2);
+
+			newStone.setTranslateX(((x + 1) * currentSquareSize));
+			newStone.setTranslateY(((y + 1) * currentSquareSize));
+			newStone.setMaterial(transparentMaterial);
+
+			newStone.setOnMouseEntered(event -> {
+				newStone.setMaterial(white ? whiteMaterial : blackMaterial);
+			});
+
+			newStone.setOnMouseExited(event -> {
+				newStone.setMaterial(transparentMaterial);
+			});
+
+			OnClickHandler handler = this.onClickHandler;
+
+			newStone.setOnMouseClicked(new EventHandler<MouseEvent>() {
+				@Override
+				public void handle(MouseEvent event) {
+					handler.handle(x, y);
+				}
+			});
+
+			board[x][y] = newStone;
+			root.getChildren().add(newStone);
+		} else {
+			Circle newStone = new Circle(((x + 1) * currentSquareSize), ((y + 1) * currentSquareSize),
+					currentSquareSize / 2);
+
+			newStone.setOnMouseEntered(event -> {
+				newStone.setFill(white ? Color.WHITE : Color.BLACK);
+			});
+
+			newStone.setOnMouseExited(event -> {
+				newStone.setFill(Color.TRANSPARENT);
+			});
+
+			board[x][y] = newStone;
+			root.getChildren().add(newStone);
+		}
+	}
+
+	protected void setOnClickHandler(OnClickHandler onClickHandler) {
+		this.onClickHandler = onClickHandler;
+	}
+	protected void setPlayerColour (TileColour colour) {
+		this.playerColour = colour;
 	}
 
 }

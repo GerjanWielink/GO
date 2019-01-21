@@ -34,7 +34,7 @@ public class BoardTest {
             this.board.tryMove(SIZE + 1, TileColour.WHITE);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            fail("Unexpected exception thrown");
+            fail("Unexpected exceptions thrown");
         }
     }
 
