@@ -1,5 +1,8 @@
 package com.nedap.go.client;
 
+import com.nedap.go.server.Logger;
+import sun.rmi.runtime.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -10,7 +13,7 @@ class InboundMessageHandler extends  Thread {
     private Socket socket;
     private ClientHandler clientHandler;
 
-    public InboundMessageHandler (Socket socket, ClientHandler clientHandler) {
+    public InboundMessageHandler (Socket socket, ClientHandler clientHandler) throws IOException {
         this.clientHandler = clientHandler;
         this.socket = socket;
     }
@@ -24,7 +27,8 @@ class InboundMessageHandler extends  Thread {
                 this.clientHandler.handleCommand(inbound);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.log("Disconnected from game server. Attempting to reconnect");
+            this.clientHandler.reConnect();
         }
 
     }

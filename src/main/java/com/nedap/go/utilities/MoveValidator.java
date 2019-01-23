@@ -46,6 +46,7 @@ public class MoveValidator {
     private void enforceKo (int index, TileColour colour) throws KoException {
         String optimisticNextState = executor.applyOptimistic(index, colour);
         List<String> history = this.board.history();
+        history.add(this.board.currentState());
 
         for (String state : history) {
             if (state.equals(optimisticNextState)) {

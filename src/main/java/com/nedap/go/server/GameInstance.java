@@ -6,7 +6,9 @@ import com.nedap.go.utilities.Board;
 import com.nedap.go.utilities.TileColour;
 import com.nedap.go.utilities.exceptions.InvalidMoveException;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GameInstance {
@@ -14,23 +16,26 @@ public class GameInstance {
 
     private int id;
     private GameState gameState;
+    private GameManager gameManager;
     private ClientHandler playerOne;
     private ClientHandler playerTwo;
     private Map<ClientHandler, TileColour> playerRoles;
     private boolean hasConfig;
     private Board board;
 
-    public GameInstance(int id) {
+    public GameInstance(int id, GameManager gameManager) {
         this.id = id;
+        this.gameManager = gameManager;
         this.gameState = GameState.WAITING;
         this.hasConfig = false;
 
         Logger.log("New empty game instance created");
     }
 
-    public GameInstance(int id, ClientHandler client) {
+    public GameInstance(int id, GameManager gameManager,  ClientHandler client) {
         this.id = id;
         this.gameState = GameState.WAITING;
+        this.gameManager = gameManager;
         this.hasConfig = false;
         try {
             this.addPlayer(client);
@@ -113,10 +118,16 @@ public class GameInstance {
 
         this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
         this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
+
+        this.gameManager.endGame(this);
     }
 
     public boolean isFull() {
         return this.playerOne != null && this.playerTwo != null;
+    }
+
+    public List<ClientHandler> getPlayers() {
+        return Arrays.asList(playerOne, playerTwo);
     }
 
     public int id() {

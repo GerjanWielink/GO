@@ -14,6 +14,8 @@ public class CommandRouter {
     public void route (String message) {
         ServerCommand command = getCommandFromMessage(message);
 
+        Logger.blue(message);
+
         if (command == null) {
             // TODO
             Logger.log("Unknow command: " + message);
@@ -73,7 +75,7 @@ public class CommandRouter {
     }
 
     public void handleGameFinished(String message) {
-        
+
     }
 
     private void handleInvalidMove(String message) {

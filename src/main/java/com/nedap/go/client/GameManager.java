@@ -4,15 +4,15 @@ import com.nedap.go.protocol.ClientCommandBuilder;
 import com.nedap.go.utilities.TileColour;
 
 
-public class GameHandler {
-    ClientHandler handler;
-    GuiConnector guiConnector;
-    int boardSize;
-    TileColour colour;
-    String boardState;
-    TileColour turn;
+public class GameManager {
+    private ClientHandler handler;
+    private GuiConnector guiConnector;
+    private int boardSize;
+    private TileColour colour;
+    private String boardState;
+    private TileColour turn;
 
-    public GameHandler(int size, TileColour colour, String stateString, ClientHandler handler) {
+    public GameManager(int size, TileColour colour, String stateString, ClientHandler handler) {
         this.handler = handler;
         this.boardSize = size;
         this.guiConnector = new GuiConnector(size, this::tryMove, this::pass, colour);

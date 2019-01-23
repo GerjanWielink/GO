@@ -28,7 +28,7 @@ public class ClientHandler extends Thread {
             this.outStream = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         } catch (IOException e) {
             // TODO: Notify server that this client is toast.
-            e.printStackTrace();
+            Logger.error("IOException in ClientHandler::ClientHandler(Server server, Socket socket)");
         }
     }
 
@@ -135,7 +135,7 @@ public class ClientHandler extends Thread {
      * Remove the socket from the server
      * @throws IOException
      */
-    private void disconnect() throws IOException {
+    public void disconnect() throws IOException {
         try {
             this.inStream.close();
             this.outStream.close();

@@ -13,7 +13,7 @@ import java.net.Socket;
 public class ClientHandler {
     private String username;
     private InetAddress host;
-    private GameHandler gameHandler;
+    private GameManager gameManager;
     private int gameId;
     private BufferedWriter outStream;
     private int port;
@@ -38,7 +38,7 @@ public class ClientHandler {
             Socket gameSocket = new Socket(this.host, this.port);
             this.outStream = new BufferedWriter(new OutputStreamWriter(gameSocket.getOutputStream()));
             (new InboundMessageHandler(gameSocket, this)).start();
-            Logger.log("Server found at " + this.host + ":" + this.port);
+            Logger.log("Connected to  " + this.host + ":" + this.port);
         } catch (IOException e) {
             Logger.log("Error finding host. Please try again.");
             this.connect();
@@ -47,6 +47,19 @@ public class ClientHandler {
 
     public void handleCommand(String message) {
         commandRouter.route(message);
+    }
+
+    public void reConnect() {
+        try {
+            Socket gameSocket = new Socket(this.host, this.port);
+            this.outStream = new BufferedWriter(new OutputStreamWriter(gameSocket.getOutputStream()));
+            (new InboundMessageHandler(gameSocket, this)).start();
+            Logger.log("Connected to " + this.host + ":" + this.port);
+            this.doHandshake();
+        } catch (IOException e) {
+            //
+        }
+
     }
 
     public void promptHostName() {
@@ -62,11 +75,11 @@ public class ClientHandler {
             this.username = name;
         }
 
-        this.gameHandler = new GameHandler(boardSize, colour, state, this);
+        this.gameManager = new GameManager(boardSize, colour, state, this);
     }
 
     public void handleAcknowledgeMove(String move, String gameState) {
-        this.gameHandler.update(move, gameState);
+        this.gameManager.update(move, gameState);
     }
 
     public void promptPort() {
@@ -82,11 +95,19 @@ public class ClientHandler {
                 new UsernameValidator()
         );
 
+        this.doHandshake();
+    }
+
+    public void doHandshake() {
+        if (this.username == null) {
+            this.promptUsername();
+        }
+
         this.sendOutBound(ClientCommandBuilder.handshake(this.username));
     }
 
     public void handleUnkownCommand(String message) {
-        this.gameHandler.displayMessage("Unknown server message: " + message);
+        this.gameManager.displayMessage("Unknown server message: " + message);
     }
 
     public void handleAcknowledgeHandshake(int gameId) {
@@ -94,7 +115,7 @@ public class ClientHandler {
     }
 
     public void handleInvalidMove(String message) {
-        this.gameHandler.displayMessage("Invalid move: " + message);
+        this.gameManager.displayMessage("Invalid move: " + message);
     }
 
     public void handleGameFinished() {}
@@ -125,7 +146,7 @@ public class ClientHandler {
             this.outStream.newLine();
             this.outStream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.error("IOException in ClientHandler::sendOutBound");
         }
     }
 

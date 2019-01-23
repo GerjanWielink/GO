@@ -15,8 +15,6 @@ public class GuiConnector {
         this.boardSize = boardSize;
 
         this.goGui = new GoGuiIntegrator(
-                true,
-                true,
                 boardSize,
                 onClickTileHandler,
                 onClickPassHandler,
@@ -28,8 +26,6 @@ public class GuiConnector {
 
     public static void main (String[] args) {
         GoGuiIntegrator integrator = new GoGuiIntegrator(
-                true,
-                true,
                 9,
                 (x, y) -> System.out.println(x + "," + y),
                 () -> System.out.println("PASS!"),

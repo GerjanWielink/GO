@@ -10,17 +10,11 @@ public class GoGuiIntegrator implements GoGui {
 	/**
 	 * Creates a GoGUIIntegrator that is capable of configuring and controlling the
 	 * GO GUI.
-	 * 
-	 * @param showStartupAnimation if true then a startup animation will be shown
-	 *                             when the GO GUI is started.
-	 * @param mode3D               if true then the stones will be shown in 3D.
-	 *                             Otherwise a 2D representation will be used.
+	 *
 	 * @param boardSize            the desired initial board size.
 	 */
-	public GoGuiIntegrator(boolean showStartupAnimation, boolean mode3D, int boardSize, OnClickTileHandler moveHandler, OnClickPassHandler passHandler, TileColour colour) {
+	public GoGuiIntegrator(int boardSize, OnClickTileHandler moveHandler, OnClickPassHandler passHandler, TileColour colour) {
 		createWrappedObject();
-		wrappee.setShowStartupAnimation(showStartupAnimation);
-		wrappee.setMode3D(mode3D);
 		wrappee.setInitialBoardSize(boardSize);
 		wrappee.setOnClickTileHandler(moveHandler);
 		wrappee.setOnClickPassHandler(passHandler);

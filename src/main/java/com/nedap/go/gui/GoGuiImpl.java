@@ -1,24 +1,16 @@
 package com.nedap.go.gui;
 
 import com.nedap.go.utilities.TileColour;
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.image.Image;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.ImagePattern;
-import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Sphere;
+
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -44,14 +36,6 @@ public class GoGuiImpl extends Application {
 	private TileColour playerColour;
 	private Text text;
 
-	private boolean mode3D = true;
-	private boolean showStartupAnimation = false;
-
-	private final PhongMaterial blackMaterial = new PhongMaterial();
-	private final PhongMaterial whiteMaterial = new PhongMaterial();
-	private final PhongMaterial yellowMaterial = new PhongMaterial();
-	private final PhongMaterial transparentMaterial = new PhongMaterial();
-
 	private static final CountDownLatch waitForConfigurationLatch = new CountDownLatch(1);
 	private static final CountDownLatch initializationLatch = new CountDownLatch(1);
 
@@ -72,18 +56,9 @@ public class GoGuiImpl extends Application {
 		waitForConfigurationLatch.countDown();
 	}
 
-	protected void setShowStartupAnimation(boolean showStartupAnimation) {
-		this.showStartupAnimation = showStartupAnimation;
-	}
-
-	protected void setMode3D(boolean mode3D) {
-		this.mode3D = mode3D;
-	}
-
 	@Override
 	public void start(Stage primaryStage) {
 		instance = this;
-		initDrawMaterials();
 
 		try {
 			waitForConfigurationLatch.await();
@@ -97,65 +72,10 @@ public class GoGuiImpl extends Application {
 
 		initNewBoard();
 
-		if (showStartupAnimation) {
-			runStartupAnimation();
-		} else {
-			initializationLatch.countDown();
-		}
+		initializationLatch.countDown();
+
 	}
 
-	private void initDrawMaterials() {
-		blackMaterial.setDiffuseColor(Color.BLACK);
-		blackMaterial.setSpecularColor(Color.LIGHTBLUE);
-		whiteMaterial.setDiffuseColor(Color.WHITE);
-		whiteMaterial.setSpecularColor(Color.LIGHTBLUE);
-		yellowMaterial.setDiffuseColor(Color.YELLOW);
-		yellowMaterial.setSpecularColor(Color.LIGHTBLUE);
-		transparentMaterial.setDiffuseColor(Color.TRANSPARENT);
-		transparentMaterial.setSpecularColor(Color.TRANSPARENT);
-	}
-
-	private void runStartupAnimation() {
-		final long startNanoTime = System.nanoTime();
-
-		final AnimationTimer animationTimer = new AnimationTimer() {
-			int roundCount = 0;
-			int lastX = 0;
-
-			@Override
-			public void handle(long currentNanoTime) {
-				double t = (currentNanoTime - startNanoTime) / 50000000.0;
-
-				int x = ((int) (t % currentBoardSize));
-
-				if (x < lastX) {
-					roundCount++;
-				}
-
-				if (x != lastX) {
-					if (roundCount >= 2) {
-						stop();
-						clearBoard();
-						initializationLatch.countDown();
-					} else {
-						clearBoard();
-						if (x % 2 != 0) {
-							drawDiagonalStoneLine(x - 1, false, roundCount != 0);
-							drawDiagonalStoneLine(x, true, roundCount != 0);
-							drawDiagonalStoneLine(x + 1, false, roundCount != 0);
-						} else {
-							drawDiagonalStoneLine(x - 1, true, roundCount != 0);
-							drawDiagonalStoneLine(x, false, roundCount != 0);
-							drawDiagonalStoneLine(x + 1, true, roundCount != 0);
-						}
-					}
-
-					lastX = x;
-				}
-			}
-		};
-		animationTimer.start();
-	}
 
 	private void initNewBoard() {
 		root = new Group();
@@ -167,8 +87,7 @@ public class GoGuiImpl extends Application {
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
-		ImagePattern pattern = new ImagePattern(new Image("background_1920.jpg"));
-		scene.setFill(pattern);
+		scene.setFill(Color.SALMON);
 
 		initBoardLines();
 		addPassButton();
@@ -193,66 +112,30 @@ public class GoGuiImpl extends Application {
 
 		root.getChildren().addAll(boardLines);
 
-		if (mode3D) {
-			hint = new Sphere(currentSquareSize / 2);
-			((Sphere) hint).setMaterial(yellowMaterial);
-		} else {
-			hint = new Circle(currentSquareSize / 2);
-			((Circle) hint).setFill(Color.YELLOW);
-		}
+
+		hint = new Circle(currentSquareSize / 2);
+		((Circle) hint).setFill(Color.YELLOW);
+
 		hint.setVisible(false);
 		root.getChildren().add(hint);
-	}
-
-	private void drawDiagonalStoneLine(int diagonal, Boolean stoneType, boolean flip) {
-		try {
-			for (int x = 0; x < currentBoardSize; x++) {
-				for (int y = 0; y < currentBoardSize; y++) {
-					if (x + y == diagonal * 2) {
-						if (!flip) {
-							addStone(x, y, stoneType);
-						} else {
-							addStone(currentBoardSize - 1 - x, y, stoneType);
-						}
-					}
-				}
-			}
-		} catch (InvalidCoordinateException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	protected void addStone(int x, int y, boolean white) throws InvalidCoordinateException {
 		checkCoordinates(x, y);
 		removeStone(x, y);
 
-		if (mode3D) {
-			Sphere newStone = new Sphere(currentSquareSize / 2);
-
-			if (white) {
-				newStone.setMaterial(whiteMaterial);
-			} else {
-				newStone.setMaterial(blackMaterial);
-			}
-
-			newStone.setTranslateX(((x + 1) * currentSquareSize));
-			newStone.setTranslateY(((y + 1) * currentSquareSize));
-			board[x][y] = newStone;
-
-			root.getChildren().add(newStone);
-		} else {
-			Circle newStone = new Circle(((x + 1) * currentSquareSize), ((y + 1) * currentSquareSize),
+		Circle newStone = new Circle(((x + 1) * currentSquareSize), ((y + 1) * currentSquareSize),
 					currentSquareSize / 2);
 
-			if (white) {
-				newStone.setFill(Color.WHITE);
-			} else {
-				newStone.setFill(Color.BLACK);
-			}
-
-			board[x][y] = newStone;
-			root.getChildren().add(newStone);
+		if (white) {
+			newStone.setFill(Color.WHITE);
+		} else {
+			newStone.setFill(Color.BLACK);
 		}
+
+		board[x][y] = newStone;
+		root.getChildren().add(newStone);
+
 	}
 
 	protected void removeStone(int x, int y) throws InvalidCoordinateException {
@@ -269,21 +152,12 @@ public class GoGuiImpl extends Application {
 		checkCoordinates(x, y);
 		removeStone(x, y);
 
-		if (mode3D) {
-			Box areaStone = new Box(currentSquareSize / 3, currentSquareSize / 3, currentSquareSize / 3);
-			areaStone.setMaterial(white ? whiteMaterial : blackMaterial);
-			areaStone.setTranslateX(((x + 1) * currentSquareSize));
-			areaStone.setTranslateY(((y + 1) * currentSquareSize));
-			board[x][y] = areaStone;
-			root.getChildren().add(areaStone);
-		} else {
-			Rectangle areaStone = new Rectangle(((x + 1) * currentSquareSize) - currentSquareSize / 6,
-					((y + 1) * currentSquareSize) - currentSquareSize / 6, currentSquareSize / 3,
-					currentSquareSize / 3);
-			areaStone.setFill(white ? Color.WHITE : Color.BLACK);
-			board[x][y] = areaStone;
-			root.getChildren().add(areaStone);
-		}
+		Rectangle areaStone = new Rectangle(((x + 1) * currentSquareSize) - currentSquareSize / 6,
+				((y + 1) * currentSquareSize) - currentSquareSize / 6, currentSquareSize / 3,
+				currentSquareSize / 3);
+		areaStone.setFill(white ? Color.WHITE : Color.BLACK);
+		board[x][y] = areaStone;
+		root.getChildren().add(areaStone);
 	}
 
 	protected void addHintIndicator(int x, int y) throws InvalidCoordinateException {
@@ -322,8 +196,6 @@ public class GoGuiImpl extends Application {
 
 	protected void setBoardSize(int size) {
 		currentBoardSize = size;
-		currentBoardSize = size;
-
 		initNewBoard();
 	}
 
@@ -336,14 +208,7 @@ public class GoGuiImpl extends Application {
 	}
 
 	protected static void startGUI() {
-		new Thread() {
-
-			@Override
-			public void run() {
-				Application.launch(GoGuiImpl.class);
-			}
-
-		}.start();
+		new Thread(() -> Application.launch(GoGuiImpl.class)).start();
 	}
 
 	protected void waitForInitializationLatch() {
@@ -369,61 +234,30 @@ public class GoGuiImpl extends Application {
 	 */
 	protected void addOnHoverTile(int x, int y, boolean white) throws InvalidCoordinateException {
 		checkCoordinates(x, y);
+		Circle newStone = new Circle(((x + 1) * currentSquareSize), ((y + 1) * currentSquareSize),
+				currentSquareSize / 2);
 
-		if (mode3D) {
-			Sphere newStone = new Sphere(currentSquareSize / 2);
+		newStone.setFill(Color.TRANSPARENT);
+		OnClickTileHandler handler = this.onClickTileHandler;
 
-			newStone.setTranslateX(((x + 1) * currentSquareSize));
-			newStone.setTranslateY(((y + 1) * currentSquareSize));
-			newStone.setMaterial(transparentMaterial);
+		newStone.setOnMouseClicked(event -> handler.handle(x, y));
 
-			newStone.setOnMouseEntered(event -> {
-				newStone.setMaterial(white ? whiteMaterial : blackMaterial);
-			});
+		newStone.setOnMouseEntered(event -> {
+			newStone.setFill(white ? Color.WHITE : Color.BLACK);
+		});
 
-			newStone.setOnMouseExited(event -> {
-				newStone.setMaterial(transparentMaterial);
-			});
+		newStone.setOnMouseExited(event -> {
+			newStone.setFill(Color.TRANSPARENT);
+		});
 
-			OnClickTileHandler handler = this.onClickTileHandler;
-
-			newStone.setOnMouseClicked(event -> handler.handle(x, y));
-
-			board[x][y] = newStone;
-			root.getChildren().add(newStone);
-		} else {
-			Circle newStone = new Circle(((x + 1) * currentSquareSize), ((y + 1) * currentSquareSize),
-					currentSquareSize / 2);
-
-			newStone.setOnMouseEntered(event -> {
-				newStone.setFill(white ? Color.WHITE : Color.BLACK);
-			});
-
-			newStone.setOnMouseExited(event -> {
-				newStone.setFill(Color.TRANSPARENT);
-			});
-
-			board[x][y] = newStone;
-			root.getChildren().add(newStone);
-		}
-	}
-
-	protected void setOnClickTileHandler(OnClickTileHandler onClickTileHandler) {
-		this.onClickTileHandler = onClickTileHandler;
-	}
-
-	protected void setOnClickPassHandler(OnClickPassHandler onClickPassHandler) {
-		this.onClickPassHandler = onClickPassHandler;
-	}
-
-	protected void setPlayerColour (TileColour colour) {
-		this.playerColour = colour;
+		board[x][y] = newStone;
+		root.getChildren().add(newStone);
 	}
 
 
 	private void addPassButton () {
 		Button passButton = new Button("PASS");
-		passButton.setLayoutX((currentBoardSize / 2  + 1) * currentSquareSize);
+		passButton.setLayoutX(currentSquareSize);
 		passButton.setLayoutY((currentBoardSize + 1 ) * currentSquareSize);
 		passButton.setOnMouseClicked(event -> onClickPassHandler.handle());
 
@@ -433,8 +267,7 @@ public class GoGuiImpl extends Application {
 	private void addMessage () {
 		this.text = new Text("");
 
-		this.text.setFont(Font.font ("Verdana", 14));
-		this.text.setFill(Color.WHITE);
+		this.text.setFont(Font.font ("Verdana", 12));
 
 		this.text.setLayoutY(currentSquareSize / 2);
 		this.text.setLayoutX(currentSquareSize);
@@ -448,4 +281,15 @@ public class GoGuiImpl extends Application {
 		root.getChildren().add(this.text);
 	}
 
+	protected void setOnClickTileHandler(OnClickTileHandler onClickTileHandler) {
+		this.onClickTileHandler = onClickTileHandler;
+	}
+
+	protected void setOnClickPassHandler(OnClickPassHandler onClickPassHandler) {
+		this.onClickPassHandler = onClickPassHandler;
+	}
+
+	protected void setPlayerColour (TileColour colour) {
+		this.playerColour = colour;
+	}
 }
