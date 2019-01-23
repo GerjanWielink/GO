@@ -1,5 +1,6 @@
 package com.nedap.go.server;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,11 +23,14 @@ public class GameManagerTest {
         this.server = new Server(PORT);
         this.mockClients = new ArrayList<>();
 
+        server.start();
+
         try {
             for (int i = 0; i < 5; i++) {
                 mockClients.add(new ClientHandler(this.server, new Socket("127.0.0.1", PORT)));
+                Thread.sleep(200);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -36,8 +40,14 @@ public class GameManagerTest {
     @Test
     public void shouldAcceptMultipleClients () {
         try {
-            mockClients.forEach(client -> this.gameManager.addPlayer(client));
-
+            mockClients.forEach(client -> {
+                this.gameManager.addPlayer(client);
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         } catch (Exception e) {
             fail(e.getMessage());
         }
@@ -48,8 +58,14 @@ public class GameManagerTest {
         try {
             mockClients.forEach(client -> this.gameManager.addPlayer(client));
             mockClients.forEach(client -> client.handleHandshakeCommand("Player" + (int) (Math.random() * 1000)));
+
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @After
+    public void kill() {
+        this.server.kill();
     }
 }

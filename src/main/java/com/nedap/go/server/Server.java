@@ -3,58 +3,70 @@ package com.nedap.go.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Server {
+public class Server extends Thread {
     private int port;
     private boolean run;
-    private List<ClientHandler> unidentifiedConnections;
+    private List<ClientHandler> connections;
+    private List<ClientHandler> playerConnections;
     private GameManager gameManager;
+    private ServerSocket serverSocket;
 
-    public Server(int port){
+    public Server(int port) {
         this.port = port;
-        this.unidentifiedConnections = new ArrayList<>();
+        this.connections = new ArrayList<>();
         this.gameManager = new GameManager(this);
     }
 
     public static void main (String[] args) throws IOException {
         Server hi = new Server(8000);
-
         hi.start();
     }
 
-    public void start() throws IOException {
-        this.run = true;
-
-        ServerSocket serverSocket = new ServerSocket(port);
+    public void run() {
+        try {
+            this.serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Logger.log("Server listening for connections on port " + port);
 
-        while (run) {
+        while (!Thread.currentThread().isInterrupted()) {
+            Socket clientSocket;
             try {
-                Socket clientSocket = serverSocket.accept();
+                clientSocket = serverSocket.accept();
                 Logger.log("Anonymous client connected");
 
                 ClientHandler newHandler = new ClientHandler(this, clientSocket);
                 newHandler.start();
 
-                this.unidentifiedConnections.add(newHandler);
-            } catch (SocketTimeoutException e) {
-                //
+                this.connections.add(newHandler);
+            } catch (IOException e) {
+                if (e instanceof SocketException) {
+                    Logger.log("Server socket closed");
+                } else {
+                    Logger.error("IOException in Server::run()");
+                }
             }
         }
     }
 
-    public void stop() {
-        this.run = false;
+    public void kill() {
+        try {
+            this.serverSocket.close();
+            this.interrupt();
+        } catch (IOException e) {
+            Logger.error(e.getMessage());
+        }
     }
 
     public void identify(ClientHandler client) {
         String username = client.username();
 
         if (username != null) {
-            this.unidentifiedConnections.remove(client);
             Logger.log("ClientHandler " + username + " identified");
             this.gameManager.addPlayer(client);
         }

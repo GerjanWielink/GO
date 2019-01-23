@@ -213,9 +213,7 @@ public class GoGuiImpl extends Application {
 
 	protected void waitForInitializationLatch() {
 		try {
-			System.out.println("Attempting init of the GoGui!");
 			if (!initializationLatch.await(30, TimeUnit.SECONDS)) {
-				System.out.println("Initialization of the GOGUI failed!");
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();

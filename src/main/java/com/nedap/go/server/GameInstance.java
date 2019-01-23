@@ -116,8 +116,8 @@ public class GameInstance {
 
         String winnerName = this.playerRoles.get(this.playerOne).equals(winningColour) ? playerOne.username() : playerTwo.username();
 
-        this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
-        this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, ""));
+        this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, "Doeg."));
+        this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, "Doeg."));
 
         this.gameManager.endGame(this);
     }
