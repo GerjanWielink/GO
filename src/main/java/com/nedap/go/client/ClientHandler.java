@@ -18,11 +18,13 @@ public class ClientHandler {
     private BufferedWriter outStream;
     private int port;
     private CommandRouter commandRouter;
+    private boolean jeSuisAi;
 
     public static void main (String[] args) {
         ClientHandler handler = new ClientHandler();
 
         handler.connect();
+        handler.promptAi();
         handler.promptUsername();
     }
 
@@ -75,7 +77,7 @@ public class ClientHandler {
             this.username = name;
         }
 
-        this.gameManager = new GameManager(boardSize, colour, state, this);
+        this.gameManager = new GameManager(boardSize, colour, state, this, this.jeSuisAi);
     }
 
     public void handleAcknowledgeMove(String move, String gameState) {
@@ -96,6 +98,13 @@ public class ClientHandler {
         );
 
         this.doHandshake();
+    }
+
+    public void promptAi() {
+        this.jeSuisAi = (boolean) promptInput(
+                "Do you want the computer to play for you? (y/n)",
+                new BooleanValidator()
+        );
     }
 
     public void doHandshake() {

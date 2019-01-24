@@ -92,14 +92,6 @@ public class Board {
         turnKeeper.passTurn();
     }
 
-    /**
-     *
-     * @return
-     */
-    public TurnKeeper turnKeeper() {
-        return this.turnKeeper;
-    }
-
     public void printCurrentState() {
         StringBuilder formattedBoard = new StringBuilder();
         String stateWithTiles = this.currentState.replaceAll("0", "⛶");
@@ -145,6 +137,17 @@ public class Board {
 
     public ScoreProvider scoreProvider() {
         return this.scoreProvider;
+    }
+    public TurnKeeper turnKeeper() {
+        return this.turnKeeper;
+    }
+
+    public MoveValidator moveValidator () {
+        return this.executor.moveValidator();
+    }
+
+    public MoveExecutor moveExecutor() {
+        return this.executor;
     }
 
     public Set<Integer> getNeighbourIndices(int index) {

@@ -36,7 +36,6 @@ public class ClientHandler extends Thread {
         try {
             String inbound;
             while ((inbound = inStream.readLine()) != null) {
-                Logger.log(inbound);
                 this.commandRouter.route(inbound);
             }
         } catch (IOException e) {
@@ -122,6 +121,7 @@ public class ClientHandler extends Thread {
      * @param message
      */
     public void sendOutbound(String message) {
+        Logger.outbound(message);
         try {
             this.outStream.write(message);
             this.outStream.newLine();

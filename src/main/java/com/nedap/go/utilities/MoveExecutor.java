@@ -78,6 +78,10 @@ public class MoveExecutor {
         return nextBoardState;
     }
 
+    public MoveValidator moveValidator() {
+        return this.validator;
+    }
+
     /**
      * @param boardState previous boardState
      * @param colour colour for which captures should be removed

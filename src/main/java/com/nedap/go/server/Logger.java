@@ -6,6 +6,7 @@ public class Logger {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_MAGENTA = "\u001b[35m";
 
     public static void log (String string) {
         System.out.println(timeStamp(string));
@@ -15,9 +16,14 @@ public class Logger {
         System.out.println(ANSI_RED + timeStamp(message) + ANSI_RESET);
     }
 
-    public static void blue(String message) {
-        System.out.println(ANSI_CYAN + timeStamp(message) + ANSI_RESET);
+    public static void inbound(String message) {
+        System.out.println(ANSI_CYAN  + timeStamp(message) + ANSI_RESET);
     }
+
+    public static void outbound(String message) {
+        System.out.println(ANSI_MAGENTA + timeStamp(message) + ANSI_RESET);
+    }
+
 
     private static String timeStamp (String string) {
         return "[" + new Date() + "]: " + string;

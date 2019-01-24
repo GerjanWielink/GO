@@ -9,9 +9,7 @@ import java.util.List;
 
 public class Server extends Thread {
     private int port;
-    private boolean run;
     private List<ClientHandler> connections;
-    private List<ClientHandler> playerConnections;
     private GameManager gameManager;
     private ServerSocket serverSocket;
 

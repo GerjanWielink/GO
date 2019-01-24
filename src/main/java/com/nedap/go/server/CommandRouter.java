@@ -16,6 +16,7 @@ public class CommandRouter {
      * @param message provided command
      */
     public void route(String message) {
+        Logger.inbound(message);
         ClientCommand command = getCommandFromMessage(message);
 
         if (command == null) {
