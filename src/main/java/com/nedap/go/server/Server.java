@@ -1,5 +1,8 @@
 package com.nedap.go.server;
 
+import com.nedap.go.utilities.IO;
+import com.nedap.go.utilities.validators.PortValidator;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -8,29 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server extends Thread {
-    private int port;
+    private Integer port;
     private List<ClientHandler> connections;
     private GameManager gameManager;
     private ServerSocket serverSocket;
 
-    public Server(int port) {
+    public Server() {
+        this.connections = new ArrayList<>();
+        this.gameManager = new GameManager(this);
+    }
+
+    public Server(Integer port) {
         this.port = port;
         this.connections = new ArrayList<>();
         this.gameManager = new GameManager(this);
     }
 
     public static void main (String[] args) throws IOException {
-        Server hi = new Server(8000);
-        hi.start();
+        (new Server()).start();
     }
 
+    /**
+     * Main body of the server Thread. Responsible for opening the socket and listening for connections.
+     */
     public void run() {
-        try {
-            this.serverSocket = new ServerSocket(port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Logger.log("Server listening for connections on port " + port);
+        this.openSocket();
 
         while (!Thread.currentThread().isInterrupted()) {
             Socket clientSocket;
@@ -52,6 +57,24 @@ public class Server extends Thread {
         }
     }
 
+    private void openSocket() {
+        try {
+            if (this.port == null) {
+                this.port = (int) IO.promptInput("Please provide a socket for the server to listen on (8000):", new PortValidator());
+            }
+            this.serverSocket = new ServerSocket(port);
+            Logger.log("Server listening for connections on port " + port);
+        } catch (IOException | IllegalArgumentException e) {
+            Logger.error("Error opening socket on port: " + this.port+ ". Port is not available or out of range. Please provide another port.");
+            this.port = null;
+            this.openSocket();
+            return;
+        }
+    }
+
+    /**
+     * Kills the server by interrupting the thread.
+     */
     public void kill() {
         try {
             this.serverSocket.close();
@@ -61,6 +84,11 @@ public class Server extends Thread {
         }
     }
 
+    /**
+     * Identify a client to the server after a handshake is received. Changes the client from an
+     * anonymous player to a proper GO player.
+     * @param client the ClientHandler object which sent a handshake.
+     */
     public void identify(ClientHandler client) {
         String username = client.username();
 

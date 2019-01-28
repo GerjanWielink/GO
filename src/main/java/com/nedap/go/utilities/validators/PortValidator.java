@@ -1,6 +1,7 @@
-package com.nedap.go.client.validators;
+package com.nedap.go.utilities.validators;
 
-import com.nedap.go.client.exceptions.InvalidInputException;
+import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.exceptions.InvalidInputException;
 
 public class PortValidator implements CommandInputValidator {
 
@@ -13,6 +14,7 @@ public class PortValidator implements CommandInputValidator {
 
             return Integer.parseInt(message, 10);
         } catch (NumberFormatException e) {
+            Logger.error("Error parsing port. Please provide a valid integer.");
             throw new InvalidInputException();
         }
     }

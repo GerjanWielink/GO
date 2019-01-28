@@ -19,6 +19,10 @@ public class GameInstance {
     private GameManager gameManager;
     private ClientHandler playerOne;
     private ClientHandler playerTwo;
+
+    private Boolean playerOneWantsRematch;
+    private Boolean playerTwoWantsRematch;
+
     private Map<ClientHandler, TileColour> playerRoles;
     private boolean hasConfig;
     private Board board;
@@ -57,6 +61,33 @@ public class GameInstance {
 
         if (playerTwo != null) {
             playerRoles.put(playerTwo, colour.other());
+            this.startGame();
+        }
+    }
+
+    public void requestRematch(ClientHandler player, boolean rematch) {
+        if (player == this.playerOne) {
+            this.playerOneWantsRematch = rematch;
+        } else {
+            this.playerTwoWantsRematch = rematch;
+        }
+
+        if (
+                (playerOneWantsRematch != null && !playerOneWantsRematch) ||
+                (playerTwoWantsRematch != null && !playerTwoWantsRematch)
+        ) {
+            this.playerOne.sendOutbound(ServerMessageBuilder.acknowledgeRematch(false));
+            this.playerTwo.sendOutbound(ServerMessageBuilder.acknowledgeRematch(false));
+        }
+
+        if (
+                (playerOneWantsRematch != null && playerOneWantsRematch) &&
+                (playerTwoWantsRematch != null && playerTwoWantsRematch)
+        ) {
+            this.playerOne.sendOutbound(ServerMessageBuilder.acknowledgeRematch(true));
+            this.playerTwo.sendOutbound(ServerMessageBuilder.acknowledgeRematch(true));
+
+            this.board = new Board(this.board.size());
             this.startGame();
         }
     }
@@ -102,13 +133,20 @@ public class GameInstance {
        }
     }
 
-    public void startGame() {
+    /**
+     * Called when both players have connected and a config has been set.
+     * Notifies the players that the game is ready to be played
+     */
+    private void startGame() {
         this.gameState = GameState.PLAYING;
-        this.playerOne.notifyGameStart(this.playerRoles.get(this.playerOne));
-        this.playerTwo.notifyGameStart(this.playerRoles.get(this.playerTwo));
+        this.playerOne.notifyGameStart(this.playerRoles.get(this.playerOne), this.playerTwo.username());
+        this.playerTwo.notifyGameStart(this.playerRoles.get(this.playerTwo), this.playerOne.username());
     }
 
-    public void endGame() {
+    /**
+     * Called when the game stops. Sends out the scores and a rematch request
+     */
+    private void endGame() {
         this.gameState = GameState.FINISHED;
 
         Map<TileColour, Double> score = this.board.scoreProvider().getScore();
@@ -116,21 +154,55 @@ public class GameInstance {
 
         String winnerName = this.playerRoles.get(this.playerOne).equals(winningColour) ? playerOne.username() : playerTwo.username();
 
-        this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, "Doeg."));
-        this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, "Doeg."));
+        this.playerOne.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, winnerName + " da best!"));
+        this.playerTwo.sendOutbound(ServerMessageBuilder.gameFinished(this.id, winnerName, score, winnerName + " da best!"));
 
-        this.gameManager.endGame(this);
+        this.playerOne.sendOutbound(ServerMessageBuilder.requestRematch());
+        this.playerTwo.sendOutbound(ServerMessageBuilder.requestRematch());
     }
 
-    public boolean isFull() {
+    /**
+     * Called when a player is removed from the game for any reason.
+     * @param player ClientHandler object to be removed from the game
+     */
+    void removePlayer(ClientHandler player) {
+        ClientHandler disconnectedPlayer = player == this.playerOne ? this.playerOne : this.playerTwo;
+        ClientHandler remainingPlayer = player == this.playerOne ? this.playerTwo : this.playerOne;
+
+        if (this.gameState != GameState.WAITING) {
+            // self destruct
+            Map<TileColour, Double> defaultScore = new HashMap<>();
+            defaultScore.put(this.playerRoles.get(remainingPlayer), 1000.0);
+            defaultScore.put(this.playerRoles.get(disconnectedPlayer), 0.0);
+
+            remainingPlayer.sendOutbound(ServerMessageBuilder.gameFinished(
+                    this.id,
+                    remainingPlayer.username(),
+                    defaultScore,
+                    disconnectedPlayer.username() + "disconnected. "
+                            + remainingPlayer.username() + " wins by default."
+            ));
+
+            this.gameManager.endGame(this);
+        } else {
+            if (this.playerOne == disconnectedPlayer) {
+                this.playerOne = null;
+                return;
+            }
+
+            this.playerTwo = null;
+        }
+    }
+
+    boolean isFull() {
         return this.playerOne != null && this.playerTwo != null;
     }
 
-    public List<ClientHandler> getPlayers() {
+    List<ClientHandler> getPlayers() {
         return Arrays.asList(playerOne, playerTwo);
     }
 
-    public int id() {
+    int id() {
         return this.id;
     }
 

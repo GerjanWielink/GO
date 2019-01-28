@@ -11,29 +11,19 @@ public class GuiConnector {
     private GoGuiIntegrator goGui;
     private int boardSize;
 
-    public GuiConnector(int boardSize, OnClickTileHandler onClickTileHandler, OnClickPassHandler onClickPassHandler, TileColour colour) {
+    public GuiConnector(int boardSize, OnClickTileHandler onClickTileHandler, OnClickPassHandler onClickPassHandler, TileColour colour, String opponentUsername) {
         this.boardSize = boardSize;
 
         this.goGui = new GoGuiIntegrator(
                 boardSize,
                 onClickTileHandler,
                 onClickPassHandler,
-                colour);
+                colour,
+                opponentUsername
+        );
         this.goGui.startGUI();
         this.goGui.setBoardSize(boardSize);
         this.clearBoard();
-    }
-
-    public static void main (String[] args) {
-        GoGuiIntegrator integrator = new GoGuiIntegrator(
-                9,
-                (x, y) -> System.out.println(x + "," + y),
-                () -> System.out.println("PASS!"),
-                TileColour.BLACK);
-        integrator.startGUI();
-        integrator.setBoardSize(9);
-        integrator.clearBoard();
-        integrator.updateTextMessage("Welcome to Go! You are playing Black, White has the turn");
     }
 
     // TODO: difference detection maybe

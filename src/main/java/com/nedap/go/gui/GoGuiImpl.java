@@ -35,6 +35,7 @@ public class GoGuiImpl extends Application {
 	private Node hint = null;
 	private TileColour playerColour;
 	private Text text;
+	private String frameTitle;
 
 	private static final CountDownLatch waitForConfigurationLatch = new CountDownLatch(1);
 	private static final CountDownLatch initializationLatch = new CountDownLatch(1);
@@ -68,12 +69,18 @@ public class GoGuiImpl extends Application {
 
 		this.primaryStage = primaryStage;
 
-		primaryStage.setTitle("GO");
+		String title = this.frameTitle != null ? this.frameTitle : "GO!";
+
+		primaryStage.setTitle(title);
 
 		initNewBoard();
 
 		initializationLatch.countDown();
 
+	}
+
+	public void setFrameTitle(String title) {
+		this.frameTitle = title;
 	}
 
 

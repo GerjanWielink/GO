@@ -1,4 +1,4 @@
-package com.nedap.go.client.exceptions;
+package com.nedap.go.utilities.exceptions;
 
 public class InvalidInputException extends Exception {
 }

@@ -1,9 +1,9 @@
 package com.nedap.go.client;
 
-import com.nedap.go.client.exceptions.InvalidInputException;
-import com.nedap.go.client.validators.*;
+import com.nedap.go.utilities.validators.*;
 import com.nedap.go.protocol.ClientCommandBuilder;
 import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.IO;
 import com.nedap.go.utilities.TileColour;
 
 import java.io.*;
@@ -12,19 +12,25 @@ import java.net.Socket;
 
 public class ClientHandler {
     private String username;
+    private String opponentUsername;
     private InetAddress host;
     private GameManager gameManager;
-    private int gameId;
     private BufferedWriter outStream;
-    private int port;
     private CommandRouter commandRouter;
-    private boolean jeSuisAi;
+
+    private boolean fresh = true;
+    private int gameId;
+    private int port;
+    private boolean computerPlayer;
+    private int maxMoveTime;
 
     public static void main (String[] args) {
         ClientHandler handler = new ClientHandler();
 
         handler.connect();
+
         handler.promptAi();
+        handler.promptMaxMoveTime();
         handler.promptUsername();
     }
 
@@ -36,6 +42,19 @@ public class ClientHandler {
         this.promptHostName();
         this.promptPort();
 
+        this.doConnect();
+    }
+
+    public void handleCommand(String message) {
+        commandRouter.route(message);
+    }
+
+    public void reConnect() {
+        this.doConnect();
+        this.doHandshake();
+    }
+
+    private void doConnect() {
         try {
             Socket gameSocket = new Socket(this.host, this.port);
             this.outStream = new BufferedWriter(new OutputStreamWriter(gameSocket.getOutputStream()));
@@ -47,37 +66,58 @@ public class ClientHandler {
         }
     }
 
-    public void handleCommand(String message) {
-        commandRouter.route(message);
-    }
-
-    public void reConnect() {
-        try {
-            Socket gameSocket = new Socket(this.host, this.port);
-            this.outStream = new BufferedWriter(new OutputStreamWriter(gameSocket.getOutputStream()));
-            (new InboundMessageHandler(gameSocket, this)).start();
-            Logger.log("Connected to " + this.host + ":" + this.port);
-            this.doHandshake();
-        } catch (IOException e) {
-            //
-        }
-
-    }
-
     public void promptHostName() {
-        this.host = (InetAddress) promptInput(
+        this.host = (InetAddress) IO.promptInput(
                 "Please provide the host address (localhost): ",
                 new HostValidator()
         );
     }
 
-    public void handleAcknowledgeConfig(String name, TileColour colour, int boardSize, String state) {
-        if (!this.username.equals(name)) {
-            Logger.log("Username changed by server to " + name);
-            this.username = name;
-        }
+    public void promptMaxMoveTime() {
+        this.maxMoveTime = (int) IO.promptInput(
+            "Please provide the maximum move time for the computer player: ",
+            new MoveTimeValidator()
+        );
+    }
 
-        this.gameManager = new GameManager(boardSize, colour, state, this, this.jeSuisAi);
+    public void handleAcknowledgeConfig(String name, TileColour colour, int boardSize, String state, String opponentUsername) {
+        if (this.fresh) {
+            if (!this.username.equals(name)) {
+                Logger.log("Username changed by server to " + name);
+                this.username = name;
+                this.opponentUsername = opponentUsername;
+            }
+            this.fresh = false;
+            this.gameManager = new GameManager(boardSize, colour, state, this, this.computerPlayer, this.maxMoveTime, this.opponentUsername);
+        } else {
+            this.gameManager.update(null, state);
+        }
+    }
+
+    public void handleRequestRematch() {
+        boolean rematch = (boolean) IO.promptInput(
+                "Would you like a rematch (y/n)?",
+                new BooleanValidator()
+        );
+
+        this.sendOutBound(ClientCommandBuilder.setRematch(rematch));
+    }
+
+    public void handleAcknowledgeRematch(boolean rematch) {
+        if (rematch) {
+            this.gameManager.displayMessage("Opponent agreed to a rematch.");
+        } else {
+            this.gameManager.displayMessage("Opponent does not want a rematch.");
+        }
+    }
+
+    public void handleGameFinished(String winner, String score) {
+        String black = score.split(";")[0];
+        String white = score.split(";")[1];
+
+        this.gameManager.displayMessage("Game finished. Black: "
+                + black + " White: " + white +
+                ". " + winner + " wins!");
     }
 
     public void handleAcknowledgeMove(String move, String gameState) {
@@ -85,14 +125,14 @@ public class ClientHandler {
     }
 
     public void promptPort() {
-        this.port = (int) promptInput(
+        this.port = (int) IO.promptInput(
                 "Please provide the server port(8000): ",
                 new PortValidator()
         );
     }
 
     public void promptUsername() {
-        this.username = (String) promptInput(
+        this.username = (String) IO.promptInput(
                 "Please provide your username: ",
                 new UsernameValidator()
         );
@@ -101,7 +141,7 @@ public class ClientHandler {
     }
 
     public void promptAi() {
-        this.jeSuisAi = (boolean) promptInput(
+        this.computerPlayer = (boolean) IO.promptInput(
                 "Do you want the computer to play for you? (y/n)",
                 new BooleanValidator()
         );
@@ -115,7 +155,7 @@ public class ClientHandler {
         this.sendOutBound(ClientCommandBuilder.handshake(this.username));
     }
 
-    public void handleUnkownCommand(String message) {
+    public void handleUnknownCommand(String message) {
         this.gameManager.displayMessage("Unknown server message: " + message);
     }
 
@@ -127,17 +167,13 @@ public class ClientHandler {
         this.gameManager.displayMessage("Invalid move: " + message);
     }
 
-    public void handleGameFinished() {}
-
-    public void handleUpdateStatus() {}
-
     public void handleRequestConfig() {
-        TileColour preferredColour = (TileColour) promptInput(
+        TileColour preferredColour = (TileColour) IO.promptInput(
                 "What colour would you like to play (b/w)?",
                 new ColourValidator()
         );
 
-        int boardSize = (int) promptInput(
+        int boardSize = (int) IO.promptInput(
                 "What board size would you like to play (5 - 19)?",
                 new BoardSizeValidator()
         );
@@ -165,20 +201,5 @@ public class ClientHandler {
 
     public String username() {
         return username;
-    }
-
-    static private Object promptInput(String message, CommandInputValidator validator) {
-        System.out.print(message);
-        String response = null;
-        try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(
-                    System.in));
-            response = in.readLine();
-
-            return validator.validate(response);
-
-        } catch (IOException | InvalidInputException e) {
-            return promptInput(message, validator);
-        }
     }
 }

@@ -13,12 +13,13 @@ public class GoGuiIntegrator implements GoGui {
 	 *
 	 * @param boardSize            the desired initial board size.
 	 */
-	public GoGuiIntegrator(int boardSize, OnClickTileHandler moveHandler, OnClickPassHandler passHandler, TileColour colour) {
+	public GoGuiIntegrator(int boardSize, OnClickTileHandler moveHandler, OnClickPassHandler passHandler, TileColour colour, String opponentUsername) {
 		createWrappedObject();
 		wrappee.setInitialBoardSize(boardSize);
 		wrappee.setOnClickTileHandler(moveHandler);
 		wrappee.setOnClickPassHandler(passHandler);
 		wrappee.setPlayerColour(colour);
+		wrappee.setFrameTitle(opponentUsername);
 	}
 
 

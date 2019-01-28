@@ -94,12 +94,9 @@ public class Board {
 
     public void printCurrentState() {
         StringBuilder formattedBoard = new StringBuilder();
-        String stateWithTiles = this.currentState.replaceAll("0", "⛶");
-        stateWithTiles = stateWithTiles.replaceAll("1", "⚫");
-        stateWithTiles = stateWithTiles.replaceAll("2", "⚪");
 
     for (int i = 0; i < this.size * this.size; i += this.size) {
-            formattedBoard.append(stateWithTiles.substring(i, i + this.size) + "\n");
+            formattedBoard.append(this.currentState.substring(i, i + this.size) + "\n");
         }
 
         System.out.print(formattedBoard.toString());
@@ -114,7 +111,7 @@ public class Board {
         StringBuilder board = new StringBuilder();
 
         for (int i = 0; i < size * size; i++) {
-            board.append(TileColour.EMPTY.asNumber());
+            board.append(TileColour.EMPTY.asInt());
         }
         return board.toString();
     }
@@ -123,7 +120,7 @@ public class Board {
         Set<Integer> tilesOfColour = new HashSet<>();
 
         for (int i = 0; i < boardState.length(); i++) {
-            if(Character.getNumericValue(boardState.charAt(i)) == colour.asNumber()) {
+            if(boardState.charAt(i) == colour.asChar()) {
                 tilesOfColour.add(i);
             }
         }

@@ -41,6 +41,10 @@ public class CommandRouter {
                 this.handlePassCommand(message);
                 break;
 
+            case SET_REMATCH:
+                this.handleAcknowledgeRematch(message);
+                break;
+
             case EXIT:
                 this.handleExitCommand(message);
                 break;
@@ -99,6 +103,21 @@ public class CommandRouter {
     }
 
     /**
+     * SET_REMATCH+$REMATCH
+     * @param message provided command
+     */
+    private void handleAcknowledgeRematch(String message) {
+        String[] tokens = message.split("\\+");
+        if(tokens.length != 2) {
+            handler.handleUnknownCommand("Error parsing command. Invalid token length");
+            return;
+        }
+
+        boolean rematch = tokens[1].equals("1");
+        handler.handleRematch(rematch);
+    }
+
+    /**
      * MOVE+$GAME_ID+$PLAYER+$TILE_INDEX
      * @param message provided command
      */
@@ -107,6 +126,7 @@ public class CommandRouter {
 
         if (tokens.length != 4) {
             handler.handleUnknownCommand("Error parsing command. Invalid token length.");
+            return;
         }
 
         // TODO: Verification on gameId and playername (redundant but meh)

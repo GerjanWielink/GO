@@ -2,7 +2,6 @@ package com.nedap.go.client;
 
 import com.nedap.go.betago.BetaGo;
 import com.nedap.go.protocol.ClientCommandBuilder;
-import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.TileColour;
 import javafx.util.Pair;
 
@@ -17,18 +16,18 @@ public class GameManager {
     private boolean ai;
     private BetaGo betaGo;
 
-    public GameManager(int size, TileColour colour, String stateString, ClientHandler handler) {
-        this(size, colour, stateString, handler, false);
+    public GameManager(int size, TileColour colour, String stateString, ClientHandler handler, int maxMoveTime, String opponentUsername) {
+        this(size, colour, stateString, handler, false, maxMoveTime, opponentUsername);
     }
 
-    public GameManager(int size, TileColour colour, String stateString, ClientHandler handler, boolean ai) {
+    public GameManager(int size, TileColour colour, String stateString, ClientHandler handler, boolean ai, int maxMoveTime, String opponentUsername) {
         this.handler = handler;
         this.boardSize = size;
         this.colour = colour;
-        this.guiConnector = new GuiConnector(size, this::tryMove, this::pass, colour);
+        this.guiConnector = new GuiConnector(size, this::tryMove, this::pass, colour, opponentUsername);
         this.readGameState(stateString);
         this.ai = ai;
-        this.betaGo = new BetaGo(this.boardSize, this.colour);
+        this.betaGo = new BetaGo(this.boardSize, this.colour, maxMoveTime);
     }
 
     private void tryMove(int x, int y) {
@@ -56,7 +55,9 @@ public class GameManager {
 
     public void update(String move, String stateString) {
         this.readGameState(stateString);
-        this.displayMessage(this.formatMoveHumanReadable(move));
+        if (move != null) {
+            this.displayMessage(this.formatMoveHumanReadable(move));
+        }
         this.betaGo.update(move);
 
         if (this.ai && this.turn == this.colour) {
@@ -67,7 +68,6 @@ public class GameManager {
             ));
         }
     }
-
 
     private int indexFromRowCol(int x, int y) {
         return this.boardSize * y + x;

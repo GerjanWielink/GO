@@ -5,7 +5,8 @@ public enum ClientCommand {
     SET_CONFIG("SET_CONFIG"),
     MOVE("MOVE"),
     PASS("PASS"),
-    EXIT("EXIT");
+    EXIT("EXIT"),
+    SET_REMATCH("SET_REMATCH");
 
     private String tag;
 

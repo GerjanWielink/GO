@@ -73,7 +73,7 @@ public class ScoreProvider {
             }
 
             // neighbour is empty add to group
-            if (Character.getNumericValue(this.board.currentState().charAt(neighbourIndex)) == TileColour.EMPTY.asNumber()) {
+            if (this.board.currentState().charAt(neighbourIndex) == TileColour.EMPTY.asChar()) {
                 captureGroup.add(neighbourIndex);
                 Pair<Boolean, Set<Integer>> neighbourResult = checkGroupFromTile(colour, neighbourIndex, captureGroup);
 
@@ -83,7 +83,7 @@ public class ScoreProvider {
             }
 
             // neighbour is of same colour
-            if (Character.getNumericValue(this.board.currentState().charAt(neighbourIndex)) == colour.asNumber()) {
+            if (this.board.currentState().charAt(neighbourIndex) == colour.asChar()) {
                 continue;
             }
 

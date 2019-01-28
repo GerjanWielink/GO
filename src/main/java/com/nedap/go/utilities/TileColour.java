@@ -11,7 +11,11 @@ public enum TileColour {
         this.number = number;
     }
 
-    public int asNumber() {
+    public char asChar() {
+        return Character.forDigit(this.number, 10);
+    }
+
+    public int asInt() {
         return this.number;
     }
 

@@ -39,9 +39,12 @@ public class ClientHandler extends Thread {
                 this.commandRouter.route(inbound);
             }
         } catch (IOException e) {
-            // TODO: Notify server that this handler is toast.
+            if (this.game != null) {
+                Logger.error("ClientHandler::run(); Client disconnected from server.");
+                this.game.removePlayer(this);
+            }
         }
-    };
+    }
 
     public void resetUnknownCommandCount() {
         this.consecutiveUnknownCommands = 0;
@@ -100,9 +103,17 @@ public class ClientHandler extends Thread {
         this.game.provideConfig(preferredColour, boardSize);
     }
 
-    public void notifyGameStart(TileColour colour) {
+    public void notifyGameStart(TileColour colour, String opponentName) {
         this.colour = colour;
-        this.sendOutbound(ServerMessageBuilder.acknowledgeConfig(this.username, colour, this.game));
+        this.sendOutbound(ServerMessageBuilder.acknowledgeConfig(this.username, colour, this.game, opponentName));
+    }
+
+    /**
+     * handles the optional rematch
+     * @param rematch indicates if the client wants a rematch
+     */
+    public void handleRematch(boolean rematch) {
+        this.game.requestRematch(this, rematch);
     }
 
     public synchronized void addToGame(GameInstance gameInstance, boolean isGameLeader) {

@@ -11,7 +11,7 @@ public class ClientCommandBuilder {
     }
 
     public static String setConfig(int gameId, TileColour preferredColour, int boardDimension) {
-        return ClientCommand.SET_CONFIG.toString() + "+" + gameId + "+" + preferredColour.asNumber() + "+" + boardDimension;
+        return ClientCommand.SET_CONFIG.toString() + "+" + gameId + "+" + preferredColour.asInt() + "+" + boardDimension;
     }
 
     public static String setConfig(int gameId, int boardDimension) {
@@ -24,6 +24,10 @@ public class ClientCommandBuilder {
 
     public static String pass(int gameId, String playerName) {
         return ClientCommand.PASS.toString() + "+" + gameId + "+" + playerName;
+    }
+
+    public static String setRematch(boolean acknowledge) {
+        return ClientCommand.SET_REMATCH.toString() + "+" + (acknowledge ? "1" : "0");
     }
 
     public static String setConfig(int gameId) {

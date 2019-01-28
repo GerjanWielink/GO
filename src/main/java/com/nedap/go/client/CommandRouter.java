@@ -45,11 +45,19 @@ public class CommandRouter {
                 this.handleGameFinished(message);
                 break;
 
+            case REQUEST_REMATCH:
+                this.handleRequestRematch(message);
+                break;
+
+            case ACKNOWLEDGE_REMATCH:
+                this.handleAcknowledgeRematch(message);
+                break;
+
             case UPDATE_STATUS:
                 break;
 
             default:
-                this.gameHandler.handleUnkownCommand(message);
+                this.gameHandler.handleUnknownCommand(message);
         }
     }
 
@@ -72,8 +80,36 @@ public class CommandRouter {
         }
     }
 
-    public void handleGameFinished(String message) {
+    private void handleRequestRematch (String message) {
+        this.gameHandler.handleRequestRematch();
+    }
 
+    private void handleAcknowledgeRematch (String message) {
+        String[] tokens = message.split("\\+");
+
+        if (tokens.length != 2) {
+            return;
+        }
+
+        this.gameHandler.handleAcknowledgeRematch(
+                tokens[1].equals("1")
+        );
+    }
+
+    /**
+     * GAME_FINISHED+$GAME_ID+$WINNER+$SCORE+$MESSAGE
+     */
+    public void handleGameFinished(String message) {
+        String[] tokens = message.split("\\+");
+
+        if(tokens.length != 5) {
+            return;
+        }
+
+        String winner = tokens[2];
+        String score = tokens[3];
+
+        this.gameHandler.handleGameFinished(winner, score);
     }
 
     private void handleInvalidMove(String message) {
@@ -106,7 +142,7 @@ public class CommandRouter {
     private void handleAcknowledgeConfig(String message) {
         String[] tokens = message.split("\\+");
 
-        if(tokens.length != 5) {
+        if(tokens.length != 6) {
             // TODO: handleInvalidCommand
             return;
         }
@@ -115,9 +151,10 @@ public class CommandRouter {
         TileColour colour = tokens[2].equals("2") ? TileColour.WHITE : TileColour.BLACK;
         int size = Integer.parseInt(tokens[3],10);
         String gameState = tokens[4];
+        String opponentUsername = tokens[5];
 
 
-        this.gameHandler.handleAcknowledgeConfig(name, colour, size, gameState);
+        this.gameHandler.handleAcknowledgeConfig(name, colour, size, gameState, opponentUsername);
     }
 
     private void handleRequestConfig(String message) {

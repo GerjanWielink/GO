@@ -1,7 +1,6 @@
 package com.nedap.go.client;
 
 import com.nedap.go.server.Logger;
-import sun.rmi.runtime.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;

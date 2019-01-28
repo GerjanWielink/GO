@@ -5,6 +5,9 @@ import com.nedap.go.server.exceptions.GameFullException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Responsible for distributing player connections over game instances.
+ */
 public class GameManager {
     private Server server;
     private int currentId;
@@ -18,6 +21,10 @@ public class GameManager {
     }
 
     public synchronized void addPlayer(ClientHandler client) {
+        if (gameInstances.size() == 0) {
+            gameInstances.add(new GameInstance(this.generateId(), this));
+        }
+
         GameInstance endOfQueueGame = gameInstances.get(gameInstances.size() - 1);
 
         try {

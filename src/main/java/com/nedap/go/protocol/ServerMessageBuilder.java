@@ -30,12 +30,13 @@ public class ServerMessageBuilder {
     /**
      * @return ACKNOWLEDGE_CONFIG+$PLAYER_NAME+$COLOR+$SIZE+GAME_STATE
      */
-    public static String acknowledgeConfig(String playerName, TileColour colour, GameInstance gameInstance) {
+    public static String acknowledgeConfig(String playerName, TileColour colour, GameInstance gameInstance, String opponentName) {
         return ACKNOWLEDGE_CONFIG.toString() +
                 "+" + playerName +
-                "+" + colour.asNumber() + "+" +
+                "+" + colour.asInt() + "+" +
                 gameInstance.board().size() + "+" +
-                gameStateStringFromGameInstance(gameInstance);
+                gameStateStringFromGameInstance(gameInstance) + "+" +
+                opponentName;
     }
 
     public static String invalidMove(String message) {
@@ -67,20 +68,32 @@ public class ServerMessageBuilder {
                 "+" + message;
     }
 
+    /**
+     * @return REQUEST_REMATCH
+     */
+    public static String requestRematch() {
+        return REQUEST_REMATCH.toString();
+    }
+
+    /**
+     * @return ACKNOWLEDGE_REMATCH+$REMATCH
+     */
+    public static String acknowledgeRematch(boolean rematch) {
+        return ACKNOWLEDGE_REMATCH.toString() + "+" + (rematch ? "1" : 0);
+    }
+
+
     private static String gameStateStringFromGameInstance(GameInstance gameInstance) {
         return (gameInstance.gameState().toString() + ";") +
-                gameInstance.board().turnKeeper().current().asNumber() + ";" +
+                gameInstance.board().turnKeeper().current().asInt() + ";" +
                 gameInstance.board().currentState();
     }
 
     private static String moveFromIndexAndColour(int index, TileColour colour) {
-        return index + ";" + colour.asNumber();
+        return index + ";" + colour.asInt();
     }
 
     private static String scoreFromMap(Map<TileColour, Double> score) {
-        return TileColour.BLACK.asNumber() +
-                ";" + score.get(TileColour.BLACK) +
-                ";" + TileColour.WHITE.asNumber() +
-                ";" + score.get(TileColour.WHITE);
+        return score.get(TileColour.BLACK) + ";" + score.get(TileColour.WHITE);
     }
 }

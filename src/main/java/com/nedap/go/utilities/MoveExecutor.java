@@ -55,9 +55,13 @@ public class MoveExecutor {
      * @return the boardState after the implementation of the move
      */
     public String applyOptimistic(int index, TileColour colour) {
+        if (index == -1) {
+            return this.board.currentState();
+        }
+
         StringBuilder nextBoardStateBuilder = new StringBuilder(this.board.currentState());
 
-        nextBoardStateBuilder.setCharAt(index, (char)(colour.asNumber() + '0'));
+        nextBoardStateBuilder.setCharAt(index, colour.asChar());
 
 
 
@@ -111,7 +115,7 @@ public class MoveExecutor {
         for (Integer tileIndex : tilesToBeRemoved) {
             nextBoardStateBuilder.setCharAt(
                     tileIndex,
-                    Character.forDigit(TileColour.EMPTY.asNumber(),10)
+                   TileColour.EMPTY.asChar()
             );
         }
 
@@ -135,12 +139,12 @@ public class MoveExecutor {
                 continue;
             }
             // neighbour is empty
-            if (Character.getNumericValue(boardState.charAt(neighbourIndex)) == TileColour.EMPTY.asNumber()) {
+            if (boardState.charAt(neighbourIndex) == TileColour.EMPTY.asChar()) {
                 groupFree = true;
                 continue;
             }
             // neighbour is of same colour
-            if (Character.getNumericValue(boardState.charAt(neighbourIndex)) == colour.asNumber()) {
+            if (boardState.charAt(neighbourIndex) == colour.asChar()) {
                 captureGroup.add(neighbourIndex);
                 Pair<Boolean, Set<Integer>> neighbourResult = checkGroupFromTile(boardState, colour, neighbourIndex, captureGroup);
 

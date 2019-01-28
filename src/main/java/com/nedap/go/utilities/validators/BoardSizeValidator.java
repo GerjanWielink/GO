@@ -1,6 +1,6 @@
-package com.nedap.go.client.validators;
+package com.nedap.go.utilities.validators;
 
-import com.nedap.go.client.exceptions.InvalidInputException;
+import com.nedap.go.utilities.exceptions.InvalidInputException;
 
 public class BoardSizeValidator implements CommandInputValidator {
 
