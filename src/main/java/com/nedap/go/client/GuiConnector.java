@@ -48,6 +48,25 @@ public class GuiConnector {
         }
     }
 
+    /**
+     * Remove the old hint indicator and display the new one.
+     * @param index one-dimensional index of the tile.
+     */
+    public void displayHintIndicator(int index) {
+        this.removeHintIndicator();
+
+        Pair<Integer, Integer> coordinates = this.coordinates(index);
+
+        this.goGui.addHintIndicator(coordinates.getKey(), coordinates.getValue());
+    }
+
+    /**
+     * Clear the hint indicator if present.
+     */
+    public void removeHintIndicator() {
+        this.goGui.removeHintIdicator();
+    }
+
     public void layStone (Pair<Integer, Integer> coordinates, boolean white) {
         this.goGui.addStone(coordinates.getKey(), coordinates.getValue(), white);
     }

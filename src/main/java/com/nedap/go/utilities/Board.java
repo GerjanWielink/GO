@@ -69,6 +69,11 @@ public class Board {
     }
 
     public void tryMove(int index, TileColour colour) throws InvalidMoveException {
+        if (index == -1) {
+            this.tryPass(colour);
+            return;
+        }
+
         this.executor.apply(index, colour);
     }
 
@@ -151,7 +156,7 @@ public class Board {
         Set<Integer> neighbours = new HashSet<>();
 
         // not on top row
-        if (index > this.size) {
+        if (index > this.size - 1) {
             neighbours.add(index - this.size);
         }
         // not on bottom row

@@ -138,7 +138,11 @@ public class ClientHandler extends Thread {
             this.outStream.newLine();
             this.outStream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            try {
+                this.disconnect();
+            } catch (IOException ee) {
+                //
+            }
         }
     }
 

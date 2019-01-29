@@ -1,6 +1,7 @@
 package com.nedap.go.betago;
 
 import com.nedap.go.betago.sequences.CheckersSequence;
+import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.Board;
 import com.nedap.go.utilities.MoveValidator;
 import com.nedap.go.utilities.TileColour;
@@ -34,12 +35,7 @@ public class BetaGo {
         int index = Integer.parseInt(tokens[0]);
         TileColour colour = tokens[1].equals("1") ? TileColour.BLACK : TileColour.WHITE;
 
-        if (index == -1) {
-            oponnentPassed = true;
-            return;
-        }
-
-        oponnentPassed = false;
+        oponnentPassed = index == -1;
 
         try {
             board.tryMove(index, colour);
@@ -62,6 +58,8 @@ public class BetaGo {
             Map<TileColour, Double> score = this.board.scoreProvider().getScore();
 
             if (score.get(this.colour) > score.get(this.colour.other())) {
+                Logger.log("white: " + score.get(TileColour.WHITE));
+                Logger.log("black: " + score.get(TileColour.BLACK));
                 return -1;
             }
         }
@@ -83,10 +81,13 @@ public class BetaGo {
             // do nothing
         }
 
+
+        Logger.log("Maxmove; " + maxMove);
         return this.maxMove;
     }
 
     public void updateMaxMove(Integer nextMove) {
+        Logger.log("Next best move: " + nextMove);
         this.maxMove = nextMove;
     }
 

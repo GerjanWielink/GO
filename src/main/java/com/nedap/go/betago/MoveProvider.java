@@ -1,18 +1,18 @@
 package com.nedap.go.betago;
 
-import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.Board;
 import com.nedap.go.utilities.TileColour;
 import com.nedap.go.utilities.exceptions.InvalidBoardException;
 
 import java.util.List;
+import java.util.Map;
 
 public class MoveProvider extends Thread {
     private BetaGo betaGo;
     private List<Integer> validMoves;
     private TileColour colour;
     private Board board;
-    private Double maxPoints;
+    private Double maxPointsDifference;
 
     public MoveProvider(BetaGo betaGo, List<Integer> validMoves, Integer sequencemove, TileColour colour, Board board) {
         this.betaGo = betaGo;
@@ -58,10 +58,15 @@ public class MoveProvider extends Thread {
                 return;
             }
 
-            double points =  (shallowBoardCopyWithMove.scoreProvider().getScore()).get(this.colour);
+            Map<TileColour, Double> score = shallowBoardCopyWithMove.scoreProvider().getScore();
+            double myPoints = score.get(this.colour);
+            double opponentPoints = score.get(this.colour.other());
 
-            if (this.maxPoints == null || points > this.maxPoints) {
-                this.maxPoints = points;
+            double pointsDifference = myPoints - opponentPoints;
+
+
+            if (this.maxPointsDifference == null || pointsDifference > this.maxPointsDifference) {
+                this.maxPointsDifference = pointsDifference;
                 this.betaGo.updateMaxMove(index);
             }
 
