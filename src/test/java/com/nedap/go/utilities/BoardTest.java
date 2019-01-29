@@ -40,7 +40,7 @@ public class BoardTest {
 
     @Test
     public void shouldThrowBeforeTurnException() {
-        assertThrows(BeforeTurnException.class, () -> this.board.tryMove(SIZE * SIZE + 1, TileColour.WHITE));
+        assertThrows(BeforeTurnException.class, () -> this.board.tryMove(0, TileColour.WHITE));
     }
 
     @Test
@@ -51,11 +51,13 @@ public class BoardTest {
                                     "0000";  // 12:13:14:15    | | | |
         try {
             Board almostKoBoard = new Board(almostKoBoardState, TileColour.WHITE);
-            almostKoBoard.tryMove(5, TileColour.WHITE);
+            try {
+                almostKoBoard.tryMove(5, TileColour.WHITE);
+            } catch (InvalidMoveException e) {
+                fail(e.getMessage());
+            }
             assertThrows(KoException.class, () -> almostKoBoard.tryMove(6, TileColour.BLACK));
         } catch (InvalidBoardException e) {
-            fail(e.getMessage());
-        } catch (InvalidMoveException e) {
             fail(e.getMessage());
         }
     }
@@ -100,9 +102,7 @@ public class BoardTest {
         try {
             Board largeCaptureBoard = new Board(initialBoard, TileColour.WHITE);
             largeCaptureBoard.printCurrentState();
-
             largeCaptureBoard.tryMove(37, TileColour.WHITE);
-
             largeCaptureBoard.printCurrentState();
 
             assertEquals(expectedBoard, largeCaptureBoard.currentState());
@@ -126,15 +126,15 @@ public class BoardTest {
 
         this.board.printCurrentState();
 
-        String expected = "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n" +
-                        "⛶⛶⛶⛶⛶⛶⛶⛶⛶\n";
+        String expected = "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n" +
+                        "000000000\n";
 
         assertEquals(expected, outStream.toString());
     }

@@ -70,12 +70,15 @@ public class MoveExecutor {
         // Remove stones captured by the current player (i.e. stones belonging to the next player) first
         nextBoardState = removeCaptures(
             nextBoardState,
+            index,
             this.board.turnKeeper().next()
         );
+
 
         // Remove stones captured by the next player (i.e. stones belonging to the current player) second
         nextBoardState = removeCaptures(
             nextBoardState,
+            index,
             this.board.turnKeeper().current()
         );
 
@@ -91,24 +94,35 @@ public class MoveExecutor {
      * @param colour colour for which captures should be removed
      * @return string containing previous board with the respective captures removed
      */
-    public String removeCaptures(String boardState, TileColour colour) {
-        // TODO: take a long hard look at this
-        Set<Integer> tilesOfColourUnchecked = this.board.extractTilesOfColour(boardState, colour);
+    public String removeCaptures(String boardState, Integer index, TileColour colour) {
+        // A move can only affect groups which are it's direct neighbours so we
+        // only need to check these
+        Set<Integer> tileNeighbours = this.board.getNeighbourIndices(index);
+        tileNeighbours.add(index);
+
+        // First we want to check
+        Set<Integer> tilesOfColourUnchecked = new HashSet<>();
+        tileNeighbours.forEach(neighbour -> {
+            if (boardState.charAt(neighbour) == colour.asChar()) {
+                tilesOfColourUnchecked.add(neighbour);
+            }
+        });
+
         Set<Integer> tilesToBeRemoved = new HashSet<>();
 
         while (tilesOfColourUnchecked.size() > 0) {
-            Pair<Boolean, Set<Integer>> consideredTiles = checkGroupFromTile(
+            Integer currIdx = (int) tilesOfColourUnchecked.toArray()[0];
+
+            Group groupForIndex = Group.getGroupFromIndex(
                     boardState,
-                    colour,
-                    (int) tilesOfColourUnchecked.toArray()[0],
-                    null
+                    currIdx
             );
 
-            if(!consideredTiles.getKey()) {
-                tilesToBeRemoved.addAll(consideredTiles.getValue());
+            if (groupForIndex.isCaptured()) {
+                tilesToBeRemoved.addAll(groupForIndex.group());
             }
 
-            tilesOfColourUnchecked.removeAll(consideredTiles.getValue());
+            tilesOfColourUnchecked.removeAll(groupForIndex.group());
         }
 
         StringBuilder nextBoardStateBuilder = new StringBuilder(boardState);

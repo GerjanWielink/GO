@@ -13,7 +13,8 @@ import java.util.*;
 public class BetaGo {
     private Board board;
     private TileColour colour;
-    private boolean oponnentPassed = false;
+    private Ladder ladder;
+    private boolean opponentPassed = false;
     private Sequence sequence;
     private int maxMoveTime;
     private int maxMove;
@@ -25,6 +26,10 @@ public class BetaGo {
         this.sequence = new CheckersSequence(this.board, this.colour);
     }
 
+    /**
+     * Update the Board object with the played move
+     * @param move Move object as determined in the protocol
+     */
     public void update(String move) {
         String[] tokens = move.split(";");
 
@@ -35,7 +40,7 @@ public class BetaGo {
         int index = Integer.parseInt(tokens[0]);
         TileColour colour = tokens[1].equals("1") ? TileColour.BLACK : TileColour.WHITE;
 
-        oponnentPassed = index == -1;
+        opponentPassed = index == -1;
 
         try {
             board.tryMove(index, colour);
@@ -44,8 +49,13 @@ public class BetaGo {
         }
     }
 
+    /**
+     * Finds and returns the "best possible" move
+     * @return one-dimensional index of the suggested move.
+     */
     public Integer move() {
         List<Integer> validMoves = new ArrayList<>(this.validMoves());
+        Set<Integer> ladderMoves = this.potentialLadderMoves();
 
         // No valid moves left. Pass by default.
         if(validMoves.size() == 0) {
@@ -54,49 +64,45 @@ public class BetaGo {
 
 
         // Opponent passed and we are in the lead so we will also pass.
-        if (this.oponnentPassed) {
+        if (this.opponentPassed) {
             Map<TileColour, Double> score = this.board.scoreProvider().getScore();
 
             if (score.get(this.colour) > score.get(this.colour.other())) {
-                Logger.log("white: " + score.get(TileColour.WHITE));
-                Logger.log("black: " + score.get(TileColour.BLACK));
                 return -1;
             }
         }
 
         long systemTimeInMilliSeconds = System.currentTimeMillis();
+        this.maxMove = validMoves.get((int)(Math.random() * validMoves.size()));
 
-        // initiate the nextMove to a random move which we'll try to improve.
-        if (this.colour == TileColour.WHITE) {
-            this.maxMove = this.sequence.next();
-        } else {
-            maxMove = validMoves.get((int)(Math.random() * validMoves.size()));
-        }
-
-
-        MoveProvider moveProvider = new MoveProvider(this, validMoves, this.maxMove, this.colour, this.board);
+        MoveProvider moveProvider = new MoveProvider(this, validMoves, ladderMoves, this.maxMove, this.colour, this.board);
         moveProvider.start();
 
-        while ((moveProvider.isAlive() || System.currentTimeMillis() - systemTimeInMilliSeconds < 500) && System.currentTimeMillis() - systemTimeInMilliSeconds < this.maxMoveTime) {
+        while (moveProvider.isAlive()  && System.currentTimeMillis() - systemTimeInMilliSeconds < this.maxMoveTime) {
             // do nothing
         }
 
-
-        Logger.log("Maxmove; " + maxMove);
         return this.maxMove;
     }
 
+    /**
+     * Update the current best move found by the moveprovider
+     * @param nextMove one-dimensional index of the best move for now
+     */
     public void updateMaxMove(Integer nextMove) {
-        Logger.log("Next best move: " + nextMove);
         this.maxMove = nextMove;
     }
 
+    /**
+     * Returns a list of dead move that should be looked at. Filters out "dead shapes"
+     * and checks validity of dead remaining empty tiles.
+     * @return List containing the one-dimensional indices of dead valid moves
+     */
     private Set<Integer> validMoves() {
         Set<Integer> emptyTiles = new HashSet<>();
 
         try {
-            List<ShapeFilter> filters = ShapeFilterFactory.all(this.board.size(), this.colour.asChar());
-            filters.addAll(ShapeFilterFactory.all(this.board.size(), this.colour.other().asChar()));
+            List<ShapeFilter> filters = ShapeFilterFactory.dead(this.board.size(), this.colour.asChar());
             String filteredBoardState = this.board.currentState();
 
 
@@ -122,6 +128,24 @@ public class BetaGo {
         });
 
         return validMoves;
+    }
+
+    public Set<Integer> potentialLadderMoves () {
+        List<ShapeFilter> filters = ShapeFilterFactory.ladder(this.board.size(), this.colour.asChar(), this.colour.other().asChar());
+        String boardState = this.board.currentState();
+
+        for (ShapeFilter filter: filters) {
+            boardState = filter.filter(boardState);
+        }
+
+        Set<Integer> potentialLadders = new HashSet<>();
+        for (int i = 0; i < boardState.length(); i ++) {
+            if (boardState.charAt(i) == 'L') {
+                potentialLadders.add(i);
+            }
+        }
+
+        return potentialLadders;
     }
 
 }

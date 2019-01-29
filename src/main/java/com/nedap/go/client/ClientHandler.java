@@ -34,7 +34,7 @@ public class ClientHandler {
     }
 
     /**
-     * Start the client handler. Prompt all required settings.
+     * Start the client handler. Prompt dead required settings.
      */
     public void start() {
         this.connect();
@@ -110,6 +110,10 @@ public class ClientHandler {
         }
     }
 
+    /**
+     * Handles the REQUEST_REMATCH command. Prompts the user
+     * for a rematch
+     */
     public void handleRequestRematch() {
         boolean rematch = (boolean) IO.promptInput(
                 "Would you like a rematch (y/n)?",

@@ -53,7 +53,7 @@ public interface GoGui {
     void removeHintIdicator();
 
     /**
-     * Clears the board of all stones.
+     * Clears the board of dead stones.
      */
     void clearBoard();
 

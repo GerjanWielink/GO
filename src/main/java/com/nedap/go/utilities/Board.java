@@ -28,6 +28,15 @@ public class Board {
         this.scoreProvider = new ScoreProvider(this);
     }
 
+    public Board(int size, String currentState, List<String> history, TileColour turn) {
+        this.size = size;
+        this.currentState = currentState;
+        this.history = history;
+        this.turnKeeper = new TurnKeeper(2, turn);
+        this.executor = new MoveExecutor(this);
+        this.scoreProvider = new ScoreProvider(this);
+    }
+
     /**
      * Construct a board with an existing state.
      */
@@ -133,6 +142,15 @@ public class Board {
         return tilesOfColour;
     }
 
+    public Board deepCopy() {
+        return new Board(
+                this.size,
+                this.currentState,
+                new ArrayList<>(this.history),
+                this.turnKeeper().current()
+        );
+    }
+
     public Set<Integer> extractTilesOfColour(TileColour colour) {
         return this.extractTilesOfColour(this.currentState, colour);
     }
@@ -153,22 +171,26 @@ public class Board {
     }
 
     public Set<Integer> getNeighbourIndices(int index) {
+        return Board.getNeighbourIndices(index, this.size);
+    }
+
+    public static Set<Integer> getNeighbourIndices(int index, int size) {
         Set<Integer> neighbours = new HashSet<>();
 
         // not on top row
-        if (index > this.size - 1) {
-            neighbours.add(index - this.size);
+        if (index > size - 1) {
+            neighbours.add(index - size);
         }
         // not on bottom row
-        if (index < (this.size - 1) * this.size) {
-            neighbours.add(index + this.size);
+        if (index < (size - 1) * size) {
+            neighbours.add(index + size);
         }
         // not on left edge
-        if (index % this.size != 0) {
+        if (index % size != 0) {
             neighbours.add(index - 1);
         }
         // not on right edge
-        if ((index + 1) % this.size != 0) {
+        if ((index + 1) % size != 0) {
             neighbours.add(index + 1);
         }
 

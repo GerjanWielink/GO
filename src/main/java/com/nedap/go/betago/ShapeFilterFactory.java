@@ -25,7 +25,7 @@ public class ShapeFilterFactory {
 
         Board original = new Board(testBoard, null);
 
-        List<ShapeFilter> filters = ShapeFilterFactory.all(9, '1');
+        List<ShapeFilter> filters = ShapeFilterFactory.dead(9, '1');
 
         for (ShapeFilter filter: filters) {
             testBoard = filter.filter(testBoard);
@@ -39,12 +39,20 @@ public class ShapeFilterFactory {
         filtered.printCurrentState();
     }
 
-    public static List<ShapeFilter> all(int dim, char colour) {
+    public static List<ShapeFilter> dead(int dim, char colour) {
         List<ShapeFilter> filters = new ArrayList<>();
 
         filters.add(square(dim, colour));
         filters.add(tallSquare(dim, colour));
         filters.add(wideSquare(dim, colour));
+
+        return filters;
+    }
+
+    public static List<ShapeFilter> ladder(int dim, char colour, char opponentColour) {
+        List<ShapeFilter> filters = new ArrayList<>();
+
+        filters.add(ladder1(dim, colour, opponentColour));
 
         return filters;
     }
@@ -93,6 +101,20 @@ public class ShapeFilterFactory {
                 .replaceAll("X", Character.toString(colour));
 
         String replaceString = "$1XXX$2XXX$3XXX$4XXX$5";
+
+        return new ShapeFilter(dim, expr, replaceString);
+    }
+
+    /**
+     * . X X
+     * X Y .
+     * . . .
+     */
+    public static ShapeFilter ladder1(int dim, char colour, char opponentColour) {
+        String expr = ("^(.*)0XX(" + repeat(".", dim - 3) + ")XY0(" + repeat(".", dim - 3)
+        + ")000(.*)$").replaceAll("X", Character.toString(colour)).replaceAll("Y", Character.toString(opponentColour));
+
+        String replaceString = "$10XX$2XY0$30L0$4";
 
         return new ShapeFilter(dim, expr, replaceString);
     }

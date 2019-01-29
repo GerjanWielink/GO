@@ -99,6 +99,7 @@ public class GoGuiImpl extends Application {
 		initBoardLines();
 		addPassButton();
 		addMessage();
+		addLocationIndicators();
 	}
 
 	private void initBoardLines() {
@@ -142,7 +143,6 @@ public class GoGuiImpl extends Application {
 
 		board[x][y] = newStone;
 		root.getChildren().add(newStone);
-
 	}
 
 	protected void removeStone(int x, int y) throws InvalidCoordinateException {
@@ -267,6 +267,29 @@ public class GoGuiImpl extends Application {
 		passButton.setOnMouseClicked(event -> onClickPassHandler.handle());
 
 		root.getChildren().add(passButton);
+	}
+	private Circle locationIndicator (int offCenterX, int offCenterY){
+		return new Circle(
+				currentSquareSize * (1 + (currentBoardSize / 2) + offCenterX),
+				currentSquareSize * (1 + (currentBoardSize / 2) + offCenterY),
+				currentSquareSize / 12
+		);
+	}
+
+
+	private void addLocationIndicators() {
+		root.getChildren().add(locationIndicator(0, 0));
+
+		if (currentBoardSize == 19) {
+			root.getChildren().add(locationIndicator(6, 0));
+			root.getChildren().add(locationIndicator(-6, 0));
+			root.getChildren().add(locationIndicator(0, 6));
+			root.getChildren().add(locationIndicator(0, -6));
+			root.getChildren().add(locationIndicator(6, 6));
+			root.getChildren().add(locationIndicator(-6, -6));
+			root.getChildren().add(locationIndicator(-6, 6));
+			root.getChildren().add(locationIndicator(6, -6));
+		}
 	}
 
 	private void addMessage () {
