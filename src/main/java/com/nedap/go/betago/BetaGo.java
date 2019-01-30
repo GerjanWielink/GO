@@ -84,8 +84,6 @@ public class BetaGo {
         }
         moveProvider.interrupt();
 
-        System.out.println("Move calculated in: " + (System.currentTimeMillis() - systemTimeInMilliSeconds) + "ms");
-
         return this.maxMove;
     }
 
@@ -107,12 +105,15 @@ public class BetaGo {
 
           try {
               List<ShapeFilter> filters = ShapeFilterFactory.dead(this.board.size(), this.colour.asChar());
+              filters.addAll(ShapeFilterFactory.dead(this.board.size(), this.colour.other().asChar()));
               String filteredBoardState = this.board.currentState();
 
 
               for (ShapeFilter filter: filters) {
                   filteredBoardState = filter.filter(filteredBoardState);
               }
+
+              System.out.println(filteredBoardState);
 
               Board filteredBoard = new Board(filteredBoardState, null);
               emptyTiles = filteredBoard.extractTilesOfColour(TileColour.EMPTY);

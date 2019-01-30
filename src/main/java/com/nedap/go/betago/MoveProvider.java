@@ -16,7 +16,7 @@ public class MoveProvider extends Thread {
     private Integer move;
 
     private static final int FREEDOM_WEIGHT = 1;
-    private static final int SCORE_WEIGHT = 2;
+    private static final int SCORE_WEIGHT = 3;
 
     public MoveProvider(BetaGo betaGo, List<Integer> validMoves, Integer sequencemove, TileColour colour, Board board) {
         this.betaGo = betaGo;

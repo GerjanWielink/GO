@@ -4,6 +4,8 @@ import com.nedap.go.protocol.ClientCommand;
 import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.TileColour;
 
+import java.io.IOException;
+
 
 public class CommandRouter {
     private ClientHandler handler;
@@ -167,7 +169,11 @@ public class CommandRouter {
     }
 
     private void handleExitCommand(String message) {
-        //
+        try {
+            handler.disconnect();
+        } catch (IOException e) {
+            //
+        }
     }
 
     private ClientCommand getCommandFromMessage (String message) {
