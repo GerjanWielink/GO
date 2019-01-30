@@ -1,6 +1,7 @@
 package com.nedap.go.server;
 
 import com.nedap.go.utilities.IO;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.validators.PortValidator;
 
 import java.io.IOException;

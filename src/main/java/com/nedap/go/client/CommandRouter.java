@@ -1,7 +1,7 @@
 package com.nedap.go.client;
 
 import com.nedap.go.protocol.ServerCommand;
-import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.TileColour;
 
 public class CommandRouter {

@@ -3,13 +3,14 @@ package com.nedap.go.client;
 import com.nedap.go.gui.GoGuiIntegrator;
 import com.nedap.go.gui.OnClickPassHandler;
 import com.nedap.go.gui.OnClickTileHandler;
-import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.TileColour;
 import javafx.util.Pair;
 
 public class GuiConnector {
     private GoGuiIntegrator goGui;
     private int boardSize;
+    private String currentBoardState;
 
     public GuiConnector(int boardSize, OnClickTileHandler onClickTileHandler, OnClickPassHandler onClickPassHandler, TileColour colour, String opponentUsername) {
         this.boardSize = boardSize;
@@ -23,29 +24,37 @@ public class GuiConnector {
         );
         this.goGui.startGUI();
         this.goGui.setBoardSize(boardSize);
+
         this.clearBoard();
+
+        StringBuilder initialBoardBuiler = new StringBuilder();
+        for (int i = 0; i < boardSize * boardSize; i++) {
+            initialBoardBuiler.append(TileColour.EMPTY.asChar());
+        }
+
+        this.currentBoardState = initialBoardBuiler.toString();
     }
 
-    // TODO: difference detection maybe
     public void drawBoard(String boardState) {
         if (boardState.length() != boardSize * boardSize) {
             Logger.log("NOPE!");
             return;
         }
 
-        this.clearBoard();
+        for (int i = 0; i < boardState.length(); i++) {
+            if (boardState.charAt(i) == this.currentBoardState.charAt(i)) {
+                continue;
+            }
+            Pair<Integer, Integer> coordinates = this.coordinates(i);
 
-        for (int i = 0; i < boardState.length(); i++){
-            char tile = boardState.charAt(i);
-            if (tile == '0') {
-                continue;
+            this.goGui.removeStone(coordinates.getKey(), coordinates.getValue());
+
+            if (boardState.charAt(i) != TileColour.EMPTY.asChar()) {
+                this.layStone(coordinates, boardState.charAt(i) == TileColour.WHITE.asChar());
             }
-            if (tile == '1') {
-                this.layStone(this.coordinates(i), false);
-                continue;
-            }
-            this.layStone(this.coordinates(i), true);
         }
+
+        this.currentBoardState = boardState;
     }
 
     /**

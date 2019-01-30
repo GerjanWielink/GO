@@ -13,6 +13,7 @@ public class MoveProvider extends Thread {
     private TileColour colour;
     private Board board;
     private Double maxMoveScore;
+    private Integer move;
 
     private static final int FREEDOM_WEIGHT = 1;
     private static final int SCORE_WEIGHT = 2;
@@ -24,6 +25,7 @@ public class MoveProvider extends Thread {
         this.board = board;
 
         this.maxMoveScore = scoreMove(sequencemove);
+        this.move = sequencemove;
     }
 
 
@@ -31,12 +33,10 @@ public class MoveProvider extends Thread {
      * Main body of the move scoring Thread. Tries all available move as long as it has time
      * and signals the AI when it finds a better move than the previous.
      */
-    public void run () {
+    public void run() {
         List<Integer> validMovesCopy = new ArrayList<>(this.validMoves);
 
-        while (validMovesCopy.size() > 0 && !Thread.currentThread().isInterrupted()) {
-            Long startTime = System.nanoTime();
-
+        while (validMovesCopy.size() > 0) {
             Integer potentialMove = this.validMoves.get((int) (this.validMoves.size() * Math.random()));
 
             Double score = this.scoreMove(potentialMove);
@@ -47,7 +47,6 @@ public class MoveProvider extends Thread {
             }
 
             validMovesCopy.remove(potentialMove);
-            System.out.println(((System.nanoTime() - startTime) / 1000000) + " mili seconds to evaluate a move");
         }
     }
 
@@ -65,7 +64,7 @@ public class MoveProvider extends Thread {
         }
 
         if (emptyNeighbourIndices.size() == neighbourIndices.size()) {
-            return neighbourIndices.size() / 4.0;
+            return neighbourIndices.size() / 5.0;
         } else {
             try {
                 Board shallowCopyWithMove = this.shallowCopyWithMove(index);

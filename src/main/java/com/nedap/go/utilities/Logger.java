@@ -1,4 +1,4 @@
-package com.nedap.go.server;
+package com.nedap.go.utilities;
 
 import java.util.Date;
 

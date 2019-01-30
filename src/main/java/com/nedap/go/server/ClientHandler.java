@@ -1,6 +1,7 @@
 package com.nedap.go.server;
 
 import com.nedap.go.protocol.ServerMessageBuilder;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.TileColour;
 import com.nedap.go.utilities.exceptions.InvalidMoveException;
 

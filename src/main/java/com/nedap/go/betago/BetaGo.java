@@ -1,7 +1,6 @@
 package com.nedap.go.betago;
 
 import com.nedap.go.betago.sequences.CheckersSequence;
-import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.Board;
 import com.nedap.go.utilities.MoveValidator;
 import com.nedap.go.utilities.TileColour;
@@ -54,8 +53,6 @@ public class BetaGo {
      */
     public Integer move() {
         List<Integer> validMoves = new ArrayList<>(this.validMoves());
-//        Set<Integer> ladderMoves = this.potentialLadderMoves();
-
         // No valid moves left. Pass by default.
         if(validMoves.size() == 0) {
             return -1;
@@ -72,15 +69,22 @@ public class BetaGo {
         // only consider passing if we are ahead
         this.maxMove = ahead ? -1 : validMoves.get((int) (Math.random() * validMoves.size()));
 
-
         MoveProvider moveProvider = new MoveProvider(this, validMoves, this.maxMove, this.colour, this.board);
 
         long systemTimeInMilliSeconds = System.currentTimeMillis();
+
         moveProvider.start();
+
         while ((moveProvider.isAlive()  && System.currentTimeMillis() - systemTimeInMilliSeconds < this.maxMoveTime) || System.currentTimeMillis() - systemTimeInMilliSeconds < 200) {
-            // do nothing
+            try {
+                Thread.sleep(this.maxMoveTime / 20);
+            } catch (InterruptedException e) {
+                //
+            }
         }
         moveProvider.interrupt();
+
+        System.out.println("Move calculated in: " + (System.currentTimeMillis() - systemTimeInMilliSeconds) + "ms");
 
         return this.maxMove;
     }
@@ -101,21 +105,19 @@ public class BetaGo {
     private Set<Integer> validMoves() {
           Set<Integer>emptyTiles = this.board.extractTilesOfColour(TileColour.EMPTY);
 
-          if (this.colour == TileColour.BLACK) {
-              try {
-                  List<ShapeFilter> filters = ShapeFilterFactory.dead(this.board.size(), this.colour.asChar());
-                  String filteredBoardState = this.board.currentState();
+          try {
+              List<ShapeFilter> filters = ShapeFilterFactory.dead(this.board.size(), this.colour.asChar());
+              String filteredBoardState = this.board.currentState();
 
 
-                  for (ShapeFilter filter: filters) {
-                      filteredBoardState = filter.filter(filteredBoardState);
-                  }
-
-                  Board filteredBoard = new Board(filteredBoardState, null);
-                  emptyTiles = filteredBoard.extractTilesOfColour(TileColour.EMPTY);
-              } catch (InvalidBoardException e) {
-                  //
+              for (ShapeFilter filter: filters) {
+                  filteredBoardState = filter.filter(filteredBoardState);
               }
+
+              Board filteredBoard = new Board(filteredBoardState, null);
+              emptyTiles = filteredBoard.extractTilesOfColour(TileColour.EMPTY);
+          } catch (InvalidBoardException e) {
+              //
           }
 
         Set<Integer> validMoves = new HashSet<>(emptyTiles);

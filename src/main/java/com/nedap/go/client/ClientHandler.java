@@ -2,7 +2,7 @@ package com.nedap.go.client;
 
 import com.nedap.go.utilities.validators.*;
 import com.nedap.go.protocol.ClientCommandBuilder;
-import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.IO;
 import com.nedap.go.utilities.TileColour;
 

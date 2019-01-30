@@ -1,6 +1,6 @@
 package com.nedap.go.client;
 
-import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

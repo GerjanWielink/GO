@@ -243,6 +243,7 @@ public class GoGuiImpl extends Application {
 				currentSquareSize / 2);
 
 		newStone.setFill(Color.TRANSPARENT);
+		newStone.setOpacity(0.5);
 		OnClickTileHandler handler = this.onClickTileHandler;
 
 		newStone.setOnMouseClicked(event -> handler.handle(x, y));

@@ -1,6 +1,7 @@
 package com.nedap.go.server;
 
 import com.nedap.go.server.exceptions.GameFullException;
+import com.nedap.go.utilities.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,6 +1,5 @@
 package com.nedap.go.utilities;
 
-import com.nedap.go.server.Logger;
 import com.nedap.go.utilities.exceptions.*;
 
 import java.util.List;

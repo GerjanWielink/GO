@@ -1,6 +1,6 @@
 package com.nedap.go.utilities.validators;
 
-import com.nedap.go.server.Logger;
+import com.nedap.go.utilities.Logger;
 import com.nedap.go.utilities.exceptions.InvalidInputException;
 
 public class MoveTimeValidator implements CommandInputValidator{
