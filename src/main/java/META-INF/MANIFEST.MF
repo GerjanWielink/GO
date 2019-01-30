@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Class-Path: com.nedap.go.server
+Main-Class: com.nedap.go.server.Server
+

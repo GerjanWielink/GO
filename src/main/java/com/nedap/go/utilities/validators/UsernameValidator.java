@@ -5,7 +5,7 @@ import com.nedap.go.utilities.exceptions.InvalidInputException;
 public class UsernameValidator implements CommandInputValidator {
     @Override
     public Object validate(String message) throws InvalidInputException {
-        if (message.indexOf('+') != -1) {
+        if (message.indexOf('+') != -1 || message.length() == 0) {
             throw new InvalidInputException();
         }
 

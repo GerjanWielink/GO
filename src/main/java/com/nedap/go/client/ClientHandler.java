@@ -191,6 +191,7 @@ public class ClientHandler {
      * @param message Message to be sent to the server.
      */
     public void sendOutBound(String message) {
+        Logger.outbound(message);
         try {
             this.outStream.write(message);
             this.outStream.newLine();
