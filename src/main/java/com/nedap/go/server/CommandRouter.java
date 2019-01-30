@@ -176,6 +176,11 @@ public class CommandRouter {
         }
     }
 
+    /**
+     * Extract the command from a raw message
+     * @param message raw message received from the client.
+     * @return corresponding command object
+     */
     private ClientCommand getCommandFromMessage (String message) {
         String commandString = message.split("\\+")[0];
 

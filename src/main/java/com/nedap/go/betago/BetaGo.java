@@ -113,8 +113,6 @@ public class BetaGo {
                   filteredBoardState = filter.filter(filteredBoardState);
               }
 
-              System.out.println(filteredBoardState);
-
               Board filteredBoard = new Board(filteredBoardState, null);
               emptyTiles = filteredBoard.extractTilesOfColour(TileColour.EMPTY);
           } catch (InvalidBoardException e) {

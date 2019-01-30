@@ -52,6 +52,11 @@ public class GameInstance {
     }
 
 
+    /**
+     * Receives config from the client handler and starts the game accordingly
+     * @param colour Preferred tile colour
+     * @param boardSize Preferred board size
+     */
     public synchronized void provideConfig(TileColour colour, int boardSize) {
         this.board = new Board(boardSize);
 
@@ -66,7 +71,13 @@ public class GameInstance {
         }
     }
 
+    /**
+     *
+     * @param player client handler
+     * @param rematch indicates whether a rematch is requested.
+     */
     public void requestRematch(ClientHandler player, boolean rematch) {
+        // TODO: Convoluted..
         if (player == this.playerOne) {
             this.playerOneWantsRematch = rematch;
         } else {
@@ -93,6 +104,11 @@ public class GameInstance {
         }
     }
 
+    /**
+     * Add a player into this instance and assign the proper role.
+     * @param player client handler
+     * @throws GameFullException
+     */
     public synchronized void addPlayer(ClientHandler player) throws GameFullException {
         if(this.playerOne == null) {
             this.playerOne = player;
@@ -117,14 +133,25 @@ public class GameInstance {
         throw new GameFullException();
     }
 
-    // TODO: implement boolean similar to tryPass indicating if there are any valid moves left
+    /**
+     * Apply a move to the game and notify the players
+     * @param index one-dimensional tile index
+     * @param colour tile colour
+     * @throws InvalidMoveException
+     */
     public void tryMove(int index, TileColour colour) throws InvalidMoveException {
+        // TODO: implement boolean similar to tryPass indicating if there are any valid moves left
         this.board.tryMove(index, colour);
 
         playerOne.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, index, colour, this));
         playerTwo.sendOutbound(ServerMessageBuilder.acknowledgeMove(this.id, index, colour, this));
     }
 
+    /**
+     * apply a pass to the board. End the game if the game notifies that this was the second pass.
+     * @param colour tile colour
+     * @throws InvalidMoveException
+     */
     public void tryPass(TileColour colour) throws InvalidMoveException {
        if(!this.board.tryPass(colour)) {
            this.endGame();

@@ -95,7 +95,6 @@ public class GoGuiIntegrator implements GoGui {
 	public synchronized void startGUI() {
 		startJavaFX();
 		wrappee.waitForInitializationLatch();
-		System.out.println("GO GUI was successfully started!");
 	}
 
 	@Override
